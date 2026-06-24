@@ -400,9 +400,9 @@ async function createEvent() {
     payload = { ...payload, date: dstart, recurring_end: dend, time_start: tstart, time_end: tend, days_label: `${days_label} · ${fmt(dstart).split(' ').slice(-3).join(' ')} → ${fmt(dend).split(' ').slice(-3).join(' ')}` }
   }
 
-  const btn = document.querySelector(‘button[onclick="createEvent()"]’); btn.disabled = true; btn.textContent = ‘⏳ Création…’
-  const { data, error } = await db.from(‘events’).insert(payload).select().single()
-  btn.disabled = false; btn.textContent = "🚀 Créer l’événement"
+  const btn = document.querySelector('button[onclick="createEvent()"]'); btn.disabled = true; btn.textContent = '⏳ Création…'
+  const { data, error } = await db.from('events').insert(payload).select().single()
+  btn.disabled = false; btn.textContent = "🚀 Créer l'événement"
 
   if (error) { toast('Erreur : ' + error.message, 'error'); return }
   toast('Événement créé ! 🎉', 'success')
