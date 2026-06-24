@@ -559,7 +559,7 @@ async function loadEvent(id) {
 
   // Participants publics
   const partWrap = document.getElementById('ev-participants')
-  const { data: pubs } = await db.from('registrations').select('first_name,last_name').eq('event_id',id).eq('status','confirmed').order('created_at')
+  const { data: pubs } = await db.from('registrations').select('first_name,last_name').eq('event_id',id).eq('status','confirmed').order('registered_at')
   if (pubs && pubs.length > 0) {
     const names = pubs.map(r => '<span style="background:var(--primary-light);color:var(--primary);padding:5px 12px;border-radius:20px;font-size:.85rem;font-weight:600">' + r.first_name + ' ' + r.last_name + '</span>').join('')
     partWrap.innerHTML = '<div class="card"><div class="card-title">👥 Participants (' + pubs.length + ')</div><div style="display:flex;flex-wrap:wrap;gap:8px">' + names + '</div></div>'
