@@ -218,7 +218,7 @@
 
     <div style="display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:#fff;padding:16px 0;border-top:1px solid #e5e7eb;z-index:10">
       <button class="btn btn-ghost btn-lg" onclick="nav('home')">Annuler</button>
-      <button class="btn btn-primary btn-lg" onclick="createEvent()">🚀 Créer l'événement</button>
+      <button class="btn btn-primary btn-lg" onclick="creerEvenement()">🚀 Créer l'événement</button>
     </div>
   </div>
 </div>
@@ -370,7 +370,7 @@ function setType(t) {
   document.getElementById('sec-recur').style.display  = t==='r' ? 'block' : 'none'
 }
 
-async function createEvent() {
+async function creerEvenement() {
   if (!initDB()) return
   const title = document.getElementById('c-title').value.trim()
   const loc   = document.getElementById('c-loc').value.trim()
@@ -400,7 +400,7 @@ async function createEvent() {
     payload = { ...payload, date: dstart, recurring_end: dend, time_start: tstart, time_end: tend, days_label: `${days_label} · ${fmt(dstart).split(' ').slice(-3).join(' ')} → ${fmt(dend).split(' ').slice(-3).join(' ')}` }
   }
 
-  const btn = document.querySelector('button[onclick="createEvent()"]'); btn.disabled = true; btn.textContent = '⏳ Création…'
+  const btn = document.querySelector('button[onclick="creerEvenement()"]'); btn.disabled = true; btn.textContent = '⏳ Création…'
   const { data, error } = await db.from('events').insert(payload).select().single()
   btn.disabled = false; btn.textContent = "🚀 Créer l'événement"
 
