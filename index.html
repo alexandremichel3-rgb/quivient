@@ -42,6 +42,11 @@
   /* CARDS */
   .events-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(270px,1fr)); gap: 18px; padding: 28px 24px 64px; max-width: 1080px; margin: 0 auto; }
   .event-card { background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); cursor: pointer; transition: transform .15s; border: 1px solid var(--gray-200); }
+.event-card { position:relative; }
+.btn-trash-card { position:absolute;top:8px;right:8px;background:rgba(239,68,68,0.9);border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:15px;padding:4px 8px;opacity:0;transition:opacity .2s;z-index:2; }
+.event-card:hover .btn-trash-card { opacity:1; }
+.btn-trash-detail { background:none;border:1px solid #ef4444;border-radius:6px;color:#ef4444;cursor:pointer;font-size:13px;padding:3px 10px;margin-left:12px;vertical-align:middle; }
+
   .event-card:hover { transform: translateY(-3px); }
   .event-img { height: 130px; display: flex; align-items: center; justify-content: center; font-size: 2.8rem; background: linear-gradient(135deg,#6C47FF,#a78bfa); }
   .event-body { padding: 14px; }
@@ -225,7 +230,7 @@
 
 <!-- ══════════════════════ EVENT DETAIL ══════════════════════ -->
 <div class="page" id="page-event">
-  <div class="breadcrumb"><a onclick="nav('home')">Accueil</a> › <span id="ev-breadcrumb"></span></div>
+  <div class="breadcrumb"><a onclick="nav('home')">Accueil</a> › <span id="ev-breadcrumb"></span><button class="btn-trash-detail" onclick="supprimerEvenement(currentEventId)" title="Supprimer l'événement">🗑️ Supprimer</button></div>
   <div class="page-inner">
     <div id="ev-header"></div>
     <div id="ev-form-wrap"></div>
@@ -357,6 +362,7 @@ async function loadHome() {
           <span style="font-size:.75rem;color:var(--gray-600)">${count} / ${ev.max_spots} inscrits</span>
           ${left === 0 ? '<span class="badge badge-danger">🔴 Complet</span>' : left <= 3 ? `<span class="badge badge-warning">⚡ ${left} place${left>1?'s':''}</span>` : '<span class="badge badge-success">✅ Places dispo</span>'}
         </div>
+      <button class="btn-trash-card" onclick="event.stopPropagation();supprimerEvenement('${ev.id}')" title="Supprimer">🗑️</button>
       </div>`
     grid.appendChild(card)
   })
@@ -407,6 +413,17 @@ async function creerEvenement() {
   if (error) { toast('Erreur : ' + error.message, 'error'); return }
   toast('Événement créé ! 🎉', 'success')
   nav('event', data.id)
+}
+
+async function supprimerEvenement(id) {
+  const code = prompt('Code admin pour supprimer :')
+  if (code !== '2183') { toast('Code incorrect ❌', 'error'); return }
+  if (!initDB()) return
+  await db.from('registrations').delete().eq('event_id', id)
+  const { error } = await db.from('events').delete().eq('id', id)
+  if (error) { toast('Erreur : ' + error.message, 'error'); return }
+  toast('Supprimé 🗑️', 'success')
+  nav('home')
 }
 
 // ── EVENT DETAIL ──────────────────────────────────────────────
