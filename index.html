@@ -353,7 +353,7 @@ async function loadHome() {
         <div class="event-title">${ev.title}</div>
         <div class="event-meta">
           <span>📅 ${ev.is_recurring ? (ev.days_label || 'Récurrent') : fmt(ev.date)}</span>
-          ${ev.time_start ? `<span>⏰ ${ev.time_start.slice(0,5)}${ev.time_end ? ' – '+ev.time_end.slice(0,5) : ''}</span>` : ''}
+          ${ev.time_start && !ev.is_recurring ? `<span>⏰ ${ev.time_start.slice(0,5)}${ev.time_end ? ' – '+ev.time_end.slice(0,5) : ''}</span>` : ''}
           <span>📍 ${ev.location}</span>
         </div>
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
@@ -436,7 +436,7 @@ async function creerEvenement() {
       const d = b.dataset.day; const h = horaires[d]
       return dayNames[d] + (h ? ' ' + h.s + '→' + h.e : '')
     }).join(' · ') + ' · ' + fmt(dstart).split(' ').slice(-3).join(' ') + ' → ' + fmt(dend).split(' ').slice(-3).join(' ')
-    payload = { ...payload, date: dstart, recurring_end: dend, time_start: JSON.stringify(horaires), time_end: null, days_label }
+    payload = { ...payload, date: dstart, recurring_end: dend, days_schedule: JSON.stringify(horaires), time_start: null, time_end: null, days_label }
   }
 
   const btn = document.querySelector('button[onclick="creerEvenement()"]'); btn.disabled = true; btn.textContent = '⏳ Création…'
