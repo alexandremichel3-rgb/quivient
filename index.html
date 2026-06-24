@@ -235,6 +235,7 @@
     <div id="ev-header"></div>
     <div id="ev-form-wrap"></div>
     <div id="ev-share"></div>
+    <div id="ev-participants"></div>
   </div>
 </div>
 
@@ -557,8 +558,7 @@ async function loadEvent(id) {
     </div>`
 
   // Participants publics
-  let partWrap = document.getElementById('ev-participants')
-  if (!partWrap) { partWrap = document.createElement('div'); partWrap.id = 'ev-participants'; shareWrap.insertAdjacentElement('afterend', partWrap) }
+  const partWrap = document.getElementById('ev-participants')
   const { data: pubs } = await db.from('registrations').select('first_name,last_name').eq('event_id',id).eq('status','confirmed').order('created_at')
   if (pubs && pubs.length > 0) {
     const names = pubs.map(r => '<span style="background:var(--primary-light);color:var(--primary);padding:5px 12px;border-radius:20px;font-size:.85rem;font-weight:600">' + r.first_name + ' ' + r.last_name + '</span>').join('')
