@@ -139,6 +139,7 @@
     <button class="btn btn-ghost" onclick="nav('home')">Événements</button>
     <button class="btn btn-ghost" onclick="nav('dashboard')">Mon espace</button>
     <button class="btn btn-primary" onclick="nav('create')">+ Créer</button>
+    <button class="btn btn-ghost" id="nav-logout" style="display:none" onclick="logoutAdmin()">🔑 Déco</button>
   </div>
 </nav>
 
@@ -277,10 +278,35 @@ function initDB() {
   return true
 }
 
+// ── ADMIN AUTH ─────────────────────────────────────────────────────────────
+const ADMIN_PASS = '2183'
+function isAdmin() { return sessionStorage.getItem('qv_admin') === '1' }
+function loginAdmin(thenPage) {
+  const pwd = prompt('Mot de passe admin :')
+  if (!pwd) return
+  if (pwd === ADMIN_PASS) {
+    sessionStorage.setItem('qv_admin', '1')
+    updateNavAdmin()
+    toast('Connecté 👑', 'success')
+    if (thenPage) nav(thenPage)
+  } else { toast('Mot de passe incorrect ❌', 'error') }
+}
+function logoutAdmin() {
+  sessionStorage.removeItem('qv_admin')
+  updateNavAdmin()
+  nav('home')
+  toast('Déconnecté', '')
+}
+function updateNavAdmin() {
+  const el = document.getElementById('nav-logout')
+  if (el) el.style.display = isAdmin() ? '' : 'none'
+}
+
 // ── ROUTING ───────────────────────────────────────────────────
 let currentEventId = null
 
 function nav(page, eventId) {
+  if ((page === 'dashboard' || page === 'create' || page === 'registrations') && !isAdmin()) { loginAdmin(page); return }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
   document.getElementById('page-' + page).classList.add('active')
   window.scrollTo(0, 0)
@@ -529,6 +555,15 @@ async function loadEvent(id) {
         <button class="btn btn-wa" style="width:100%">💬 Partager sur WhatsApp</button>
       </a>
     </div>`
+
+  // Participants publics
+  let partWrap = document.getElementById('ev-participants')
+  if (!partWrap) { partWrap = document.createElement('div'); partWrap.id = 'ev-participants'; shareWrap.insertAdjacentElement('afterend', partWrap) }
+  const { data: pubs } = await db.from('registrations').select('first_name,last_name').eq('event_id',id).eq('status','confirmed').order('created_at')
+  if (pubs && pubs.length > 0) {
+    const names = pubs.map(r => '<span style="background:var(--primary-light);color:var(--primary);padding:5px 12px;border-radius:20px;font-size:.85rem;font-weight:600">' + r.first_name + ' ' + r.last_name + '</span>').join('')
+    partWrap.innerHTML = '<div class="card"><div class="card-title">👥 Participants (' + pubs.length + ')</div><div style="display:flex;flex-wrap:wrap;gap:8px">' + names + '</div></div>'
+  } else { partWrap.innerHTML = '' }
 }
 
 // ── REGISTER ──────────────────────────────────────────────────
@@ -575,38 +610,45 @@ async function loadDashboard() {
   const wrap = document.getElementById('dashboard-content')
   wrap.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>'
 
-  const { data: events } = await db.from('events').select('*, registrations(count, status)').order('created_at',{ascending:false})
+  const { data: events } = await db.from('events')
+    .select('*, registrations(id, first_name, last_name, status, waitlist_pos)')
+    .order('created_at', {ascending: false})
 
   if (!events?.length) {
-    wrap.innerHTML = `<div class="empty-state"><div class="icon">📭</div><h3>Aucun événement</h3><p>Crée ton premier événement !</p><button class="btn btn-primary" onclick="nav('create')">+ Créer</button></div>`
+    wrap.innerHTML = '<div class="empty-state"><div class="icon">📭</div><h3>Aucun événement</h3><p>Crée ton premier événement !</p></div>'
     return
   }
 
-  let html = `<div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="btn btn-primary" onclick="nav('create')">+ Créer un événement</button></div>`
-  html += `<div class="card" style="padding:0;overflow:hidden">`
+  let h = '<div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="btn btn-primary" onclick="nav(\'create\')">+ Créer un événement</button></div>'
 
-  events.forEach((ev, i) => {
-    const confirmed = ev.registrations?.filter(r => r.status === 'confirmed').length ?? 0
-    const waiting   = ev.registrations?.filter(r => r.status === 'waitlist').length ?? 0
-    const pct = Math.round(confirmed / ev.max_spots * 100)
-    html += `
-      <div style="display:flex;align-items:center;gap:14px;padding:16px;border-bottom:${i<events.length-1?'1px solid var(--gray-200)':'none'};cursor:pointer" onclick="nav('registrations','${ev.id}')">
-        <div style="font-size:1.6rem;width:44px;height:44px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${CAT_EMOJI[ev.category]||'📅'}</div>
-        <div style="flex:1">
-          <div style="font-weight:700;font-size:.95rem">${ev.title}</div>
-          <div style="font-size:.78rem;color:var(--gray-400);margin-top:2px">${ev.is_recurring ? '🔁 '+ev.days_label : fmt(ev.date)} · ${ev.location}</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-weight:700">${confirmed}/${ev.max_spots}</div>
-          ${waiting > 0 ? `<div style="font-size:.72rem;color:var(--warning)">⏳ ${waiting} en attente</div>` : `<div style="font-size:.72rem;color:var(--gray-400)">${pct}% rempli</div>`}
-        </div>
-      </div>`
+  events.forEach(ev => {
+    const regs = ev.registrations || []
+    const conf = regs.filter(r => r.status === 'confirmed')
+    const wait = regs.filter(r => r.status === 'waitlist').sort((a,b) => (a.waitlist_pos||99)-(b.waitlist_pos||99))
+    const cc = conf.length >= ev.max_spots ? 'var(--danger)' : 'var(--success)'
+    const confHtml = conf.length === 0
+      ? '<p style="color:var(--gray-400);font-size:.85rem;padding:4px 0">Aucun inscrit pour l\'instant</p>'
+      : '<div style="display:flex;flex-wrap:wrap;gap:6px">' + conf.map(r => '<span style="background:var(--primary-light);color:var(--primary);padding:4px 10px;border-radius:20px;font-size:.82rem;font-weight:600">' + r.first_name + ' ' + r.last_name + '</span>').join('') + '</div>'
+    const waitHtml = wait.length === 0 ? '' :
+      '<div style="font-size:.78rem;font-weight:700;color:var(--gray-400);margin:10px 0 8px">⏳ ATTENTE (' + wait.length + ')</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px">' + wait.map(r => '<span style="background:#FEF3C7;color:#92400E;padding:4px 10px;border-radius:20px;font-size:.82rem">' + r.waitlist_pos + '. ' + r.first_name + ' ' + r.last_name + '</span>').join('') + '</div>'
+    h += '<div class="card" style="margin-bottom:16px">'
+      + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'
+      + '<div style="font-size:1.6rem;width:44px;height:44px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">' + (CAT_EMOJI[ev.category]||'📅') + '</div>'
+      + '<div style="flex:1"><div style="font-weight:700">' + ev.title + '</div>'
+      + '<div style="font-size:.78rem;color:var(--gray-400)">' + (ev.is_recurring ? '🔁 '+ev.days_label : fmt(ev.date)) + ' · ' + ev.location + '</div></div>'
+      + '<div style="display:flex;align-items:center;gap:8px"><span style="font-weight:700;color:' + cc + '">' + conf.length + '/' + ev.max_spots + '</span>'
+      + '<button class="btn btn-ghost btn-sm" onclick="supprimerEvenement(\'' + ev.id + '\')">🗑️</button></div></div>'
+      + '<div style="border-top:1px solid var(--gray-200);padding-top:12px">'
+      + '<div style="font-size:.78rem;font-weight:700;color:var(--gray-400);margin-bottom:8px">✅ CONFIRMÉS (' + conf.length + ')</div>'
+      + confHtml + waitHtml + '</div>'
+      + '<div style="margin-top:12px;text-align:right">'
+      + '<button class="btn btn-ghost btn-sm" onclick="nav(\'registrations\',\'' + ev.id + '\')">📋 Détails →</button>'
+      + '</div></div>'
   })
 
-  html += `</div>`
-  wrap.innerHTML = html
+  wrap.innerHTML = h
 }
-
 // ── REGISTRATIONS VIEW ────────────────────────────────────────
 async function loadRegistrations(id) {
   if (!initDB()) return
@@ -721,6 +763,7 @@ async function handleDeepLink() {
 window.addEventListener('DOMContentLoaded', () => {
   handleDeepLink()
   loadHome()
+  updateNavAdmin()
 })
 </script>
 
