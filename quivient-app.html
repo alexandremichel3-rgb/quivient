@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuiVient ?</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  /* ── CONFIG : remplace ces 2 valeurs par les tiennes depuis supabase.com ── */
+  /* Voir instructions en bas de page */
+
+  :root {
+    --primary: #6C47FF; --primary-light: #EDE9FF;
+    --success: #22C55E; --warning: #F59E0B; --danger: #EF4444;
+    --gray-50: #F9FAFB; --gray-100: #F3F4F6; --gray-200: #E5E7EB;
+    --gray-400: #9CA3AF; --gray-600: #4B5563; --gray-800: #1F2937;
+    --radius: 12px; --shadow: 0 4px 24px rgba(0,0,0,.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray-50); color: var(--gray-800); }
+  nav { background: #fff; border-bottom: 1px solid var(--gray-200); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 58px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 1.25rem; font-weight: 800; color: var(--primary); cursor: pointer; }
+  .logo span { color: var(--gray-800); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: .875rem; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #5538e0; }
+  .btn-ghost { background: transparent; color: var(--gray-600); }
+  .btn-ghost:hover { background: var(--gray-100); }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+  .btn-lg { padding: 12px 28px; font-size: 1rem; }
+  .btn-sm { padding: 5px 11px; font-size: .78rem; }
+  .btn-wa { background: #25D366; color: #fff; }
+  .page { display: none; } .page.active { display: block; }
+
+  /* HERO */
+  .hero { background: linear-gradient(135deg,#6C47FF,#a78bfa); color: #fff; padding: 64px 24px; text-align: center; }
+  .hero h1 { font-size: 2.4rem; font-weight: 900; margin-bottom: 12px; }
+  .hero p { opacity: .85; margin-bottom: 32px; max-width: 460px; margin-left: auto; margin-right: auto; }
+
+  /* CARDS */
+  .events-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(270px,1fr)); gap: 18px; padding: 28px 24px 64px; max-width: 1080px; margin: 0 auto; }
+  .event-card { background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); cursor: pointer; transition: transform .15s; border: 1px solid var(--gray-200); }
+  .event-card:hover { transform: translateY(-3px); }
+  .event-img { height: 130px; display: flex; align-items: center; justify-content: center; font-size: 2.8rem; background: linear-gradient(135deg,#6C47FF,#a78bfa); }
+  .event-body { padding: 14px; }
+  .event-title { font-weight: 700; margin-bottom: 6px; }
+  .event-meta { font-size: .8rem; color: var(--gray-600); margin-bottom: 10px; display: flex; flex-direction: column; gap: 2px; }
+  .progress-bar { height: 5px; background: var(--gray-200); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+  .progress-fill { height: 100%; border-radius: 3px; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; font-size: .7rem; font-weight: 700; }
+  .badge-success { background: #DCFCE7; color: #16A34A; }
+  .badge-warning { background: #FEF3C7; color: #D97706; }
+  .badge-danger { background: #FEE2E2; color: #DC2626; }
+  .badge-primary { background: var(--primary-light); color: var(--primary); }
+
+  /* FORMS */
+  .page-inner { max-width: 660px; margin: 36px auto; padding: 0 18px 80px; }
+  .card { background: #fff; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--gray-200); margin-bottom: 18px; }
+  .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--gray-200); }
+  .form-group { margin-bottom: 16px; }
+  label { display: block; font-size: .82rem; font-weight: 600; color: var(--gray-600); margin-bottom: 5px; }
+  input, textarea, select { width: 100%; padding: 9px 13px; border: 1.5px solid var(--gray-200); border-radius: 8px; font-size: .9rem; outline: none; transition: border-color .15s; font-family: inherit; background: #fff; }
+  input:focus, textarea:focus, select:focus { border-color: var(--primary); }
+  textarea { resize: vertical; min-height: 80px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-hint { font-size: .73rem; color: var(--gray-400); margin-top: 4px; }
+  .toggle-group { display: flex; background: var(--gray-100); border-radius: 10px; padding: 4px; gap: 4px; margin-bottom: 18px; }
+  .toggle-opt { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: .875rem; font-weight: 600; cursor: pointer; color: var(--gray-400); transition: all .15s; }
+  .toggle-opt.active { background: #fff; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .days-picker { display: flex; gap: 7px; flex-wrap: wrap; }
+  .day-btn { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--gray-200); background: #fff; font-size: .78rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--gray-600); transition: all .15s; }
+  .day-btn.selected { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+  /* STAT BOXES */
+  .stat-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .stat-box { flex: 1; min-width: 70px; background: var(--gray-50); border-radius: 8px; padding: 12px; text-align: center; border: 1px solid var(--gray-200); }
+  .stat-num { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+  .stat-label { font-size: .68rem; color: var(--gray-400); margin-top: 2px; }
+
+  /* SHARE BOX */
+  .share-box { display: flex; gap: 12px; align-items: center; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 12px; }
+  .share-url { flex: 1; font-size: .82rem; color: var(--primary); font-weight: 600; word-break: break-all; }
+  .qr-box { width: 70px; height: 70px; background: var(--gray-200); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: .6rem; color: var(--gray-400); text-align: center; flex-shrink: 0; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th { text-align: left; font-size: .68rem; font-weight: 700; text-transform: uppercase; color: var(--gray-400); padding: 7px 10px; border-bottom: 2px solid var(--gray-200); }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--gray-200); }
+  tr:last-child td { border-bottom: none; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 18px; border-radius: 10px; font-size: .875rem; font-weight: 500; z-index: 999; transform: translateY(80px); opacity: 0; transition: all .3s; pointer-events: none; max-width: 320px; background: var(--gray-800); color: #fff; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+
+  /* SPINNER */
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid var(--gray-200); border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-center { text-align: center; padding: 48px; color: var(--gray-400); }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 64px 24px; }
+  .empty-state .icon { font-size: 3.5rem; margin-bottom: 14px; }
+  .empty-state h3 { font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; }
+  .empty-state p { color: var(--gray-400); margin-bottom: 22px; }
+
+  /* CONFIG BANNER */
+  .config-banner { background: #FEF3C7; border: 1.5px solid #F59E0B; border-radius: 10px; padding: 14px 18px; margin: 16px 24px; font-size: .85rem; color: #92400E; }
+  .config-banner strong { display: block; margin-bottom: 4px; }
+  .config-banner code { background: rgba(0,0,0,.08); padding: 2px 6px; border-radius: 4px; font-size: .82rem; }
+
+  .breadcrumb { padding: 10px 24px; font-size: .78rem; color: var(--gray-400); background: #fff; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; gap: 6px; }
+  .breadcrumb a { color: var(--primary); cursor: pointer; }
+  .confirm-center { text-align: center; padding: 44px 24px; }
+  .big-icon { font-size: 3.5rem; margin-bottom: 14px; }
+
+  @media(max-width:600px){ .form-row { grid-template-columns:1fr; } .hero h1{font-size:1.7rem;} }
+</style>
+</head>
+<body>
+
+<!-- ⚙️ CONFIG SUPABASE — modifie ces 2 lignes -->
+<script>
+  const SUPABASE_URL  = 'https://jdhqsmalmmkgbcgkusuy.supabase.co'
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkaHFzbWFsbW1rZ2JjZ2t1c3V5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDY1MzMsImV4cCI6MjA5Nzg4MjUzM30.OvDXB56H5Kienw6kXqW2Nrwyz9BCd8hZtdFkku2_ZEo'
+</script>
+
+<nav>
+  <div class="logo" onclick="nav('home')">QuiVient<span>?</span></div>
+  <div style="display:flex;gap:6px">
+    <button class="btn btn-ghost" onclick="nav('home')">Événements</button>
+    <button class="btn btn-ghost" onclick="nav('dashboard')">Mon espace</button>
+    <button class="btn btn-primary" onclick="nav('create')">+ Créer</button>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════ HOME ══════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <h1>Organisez. Invitez.<br>Gérez facilement.</h1>
+    <p>Créez un événement, partagez le lien sur WhatsApp — les inscriptions se gèrent automatiquement.</p>
+    <button class="btn btn-lg" style="background:#fff;color:var(--primary)" onclick="nav('create')">✨ Créer un événement</button>
+  </div>
+  <div id="home-content">
+    <div class="loading-center"><div class="spinner"></div><div style="margin-top:12px">Chargement…</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ CREATE ══════════════════════ -->
+<div class="page" id="page-create">
+  <div class="breadcrumb"><a onclick="nav('home')">Accueil</a> › Créer</div>
+  <div class="page-inner">
+    <h2 style="font-size:1.4rem;font-weight:900;margin-bottom:18px">✨ Créer un événement</h2>
+
+    <div class="card">
+      <div class="card-title">📝 Informations</div>
+      <div class="form-group"><label>Titre *</label><input id="c-title" type="text" placeholder="Ex : Badminton débutants"></div>
+      <div class="form-group"><label>Description</label><textarea id="c-desc" placeholder="Décrivez votre événement…"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>Catégorie</label>
+          <select id="c-cat">
+            <option value="sport">🏸 Sport</option>
+            <option value="loisirs">🎉 Loisirs</option>
+            <option value="famille">👨‍👩‍👧 Famille</option>
+            <option value="pro">💼 Professionnel</option>
+            <option value="asso">🤝 Association</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Lieu *</label><input id="c-loc" type="text" placeholder="Adresse ou nom du lieu"></div>
+      </div>
+      <div class="form-group"><label>Max. participants par séance *</label><input id="c-max" type="number" value="20" min="1"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📅 Type d'événement</div>
+      <div class="toggle-group">
+        <div class="toggle-opt active" id="tog-u" onclick="setType('u')">📌 Ponctuel</div>
+        <div class="toggle-opt" id="tog-r" onclick="setType('r')">🔁 Récurrent</div>
+      </div>
+
+      <!-- PONCTUEL -->
+      <div id="sec-unique">
+        <div class="form-row">
+          <div class="form-group"><label>Date *</label><input id="c-date" type="date"></div>
+          <div class="form-group"><label>Heure *</label><input id="c-time" type="time" value="14:00"></div>
+        </div>
+      </div>
+
+      <!-- RÉCURRENT -->
+      <div id="sec-recur" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><label>Date de début *</label><input id="c-dstart" type="date"></div>
+          <div class="form-group"><label>Date de fin *</label><input id="c-dend" type="date"></div>
+        </div>
+        <div class="form-group">
+          <label>Jours de la semaine *</label>
+          <div class="days-picker">
+            <div class="day-btn" data-day="1" onclick="this.classList.toggle('selected')">Lun</div>
+            <div class="day-btn" data-day="2" onclick="this.classList.toggle('selected')">Mar</div>
+            <div class="day-btn" data-day="3" onclick="this.classList.toggle('selected')">Mer</div>
+            <div class="day-btn" data-day="4" onclick="this.classList.toggle('selected')">Jeu</div>
+            <div class="day-btn" data-day="5" onclick="this.classList.toggle('selected')">Ven</div>
+            <div class="day-btn" data-day="6" onclick="this.classList.toggle('selected')">Sam</div>
+            <div class="day-btn" data-day="0" onclick="this.classList.toggle('selected')">Dim</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Heure de début</label><input id="c-tstart" type="time" value="19:00"></div>
+          <div class="form-group"><label>Heure de fin</label><input id="c-tend" type="time" value="21:00"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-lg" onclick="nav('home')">Annuler</button>
+      <button class="btn btn-primary btn-lg" onclick="createEvent()">🚀 Créer l'événement</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ EVENT DETAIL ══════════════════════ -->
+<div class="page" id="page-event">
+  <div class="breadcrumb"><a onclick="nav('home')">Accueil</a> › <span id="ev-breadcrumb"></span></div>
+  <div class="page-inner">
+    <div id="ev-header"></div>
+    <div id="ev-form-wrap"></div>
+    <div id="ev-share"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ DASHBOARD ══════════════════════ -->
+<div class="page" id="page-dashboard">
+  <div style="background:var(--primary);color:#fff;padding:28px 24px">
+    <h1 style="font-size:1.5rem;font-weight:800">📊 Mon espace</h1>
+    <p style="opacity:.75;font-size:.9rem;margin-top:4px">Tous tes événements</p>
+  </div>
+  <div id="dashboard-content" style="max-width:1080px;margin:0 auto;padding:24px">
+    <div class="loading-center"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ REGISTRATIONS VIEW ══════════════════════ -->
+<div class="page" id="page-registrations">
+  <div class="breadcrumb"><a onclick="nav('dashboard')">Mon espace</a> › <span id="reg-breadcrumb"></span></div>
+  <div class="page-inner" style="max-width:860px">
+    <div id="reg-content"></div>
+  </div>
+</div>
+
+<script>
+// ── INIT SUPABASE ──────────────────────────────────────────────
+const { createClient } = supabase
+let db
+
+function initDB() {
+  if (SUPABASE_URL === 'COLLE_TON_URL_ICI') {
+    document.getElementById('home-content').innerHTML = `
+      <div class="config-banner">
+        <strong>⚙️ Configuration requise</strong>
+        Ouvre ce fichier HTML dans un éditeur de texte (Bloc-notes, VS Code…) et remplace les deux valeurs en haut :<br><br>
+        <code>SUPABASE_URL</code> → ton URL Supabase (ex: https://xxxx.supabase.co)<br>
+        <code>SUPABASE_KEY</code> → ta clé anon (commence par eyJ…)<br><br>
+        Trouve-les sur <strong>supabase.com</strong> → ton projet → Settings → API
+      </div>`
+    return false
+  }
+  db = createClient(SUPABASE_URL, SUPABASE_KEY, { db: { schema: 'public' } })
+  return true
+}
+
+// ── ROUTING ───────────────────────────────────────────────────
+let currentEventId = null
+
+function nav(page, eventId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+  document.getElementById('page-' + page).classList.add('active')
+  window.scrollTo(0, 0)
+  if (page === 'home') loadHome()
+  if (page === 'dashboard') loadDashboard()
+  if (page === 'event' && eventId) { currentEventId = eventId; loadEvent(eventId) }
+  if (page === 'registrations' && eventId) { currentEventId = eventId; loadRegistrations(eventId) }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg, type = '') {
+  const t = document.getElementById('toast')
+  t.textContent = msg; t.className = 'toast show ' + type
+  setTimeout(() => t.className = 'toast', 3200)
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+const CAT_EMOJI = { sport:'🏸', loisirs:'🎉', famille:'👨‍👩‍👧', pro:'💼', asso:'🤝' }
+const CAT_COLOR = { sport:'linear-gradient(135deg,#22C55E,#4ade80)', loisirs:'linear-gradient(135deg,#F59E0B,#fbbf24)', famille:'linear-gradient(135deg,#EC4899,#f472b6)', pro:'linear-gradient(135deg,#3B82F6,#60a5fa)', asso:'linear-gradient(135deg,#8B5CF6,#c4b5fd)' }
+
+function fmt(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr + 'T00:00:00')
+  return d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
+}
+
+function slugify(str) {
+  return str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + Math.random().toString(36).slice(2,7)
+}
+
+function shareUrl(slug) {
+  return window.location.origin + window.location.pathname + '?event=' + slug
+}
+
+// ── HOME ──────────────────────────────────────────────────────
+async function loadHome() {
+  if (!initDB()) return
+  const wrap = document.getElementById('home-content')
+  wrap.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>'
+
+  const { data: events, error } = await db.from('events').select('*, registrations(count)').order('created_at', { ascending: false })
+
+  if (error) { wrap.innerHTML = `<div class="loading-center" style="color:var(--danger)">Erreur : ${error.message}</div>`; return }
+
+  if (!events.length) {
+    wrap.innerHTML = `<div class="empty-state">
+      <div class="icon">📭</div>
+      <h3>Aucun événement pour l'instant</h3>
+      <p>Crée ton premier événement et partage le lien sur WhatsApp !</p>
+      <button class="btn btn-primary btn-lg" onclick="nav('create')">✨ Créer mon premier événement</button>
+    </div>`
+    return
+  }
+
+  wrap.innerHTML = `<div class="events-grid" id="events-grid"></div>`
+  const grid = document.getElementById('events-grid')
+
+  events.forEach(ev => {
+    const count = ev.registrations?.[0]?.count ?? 0
+    const pct = Math.round(count / ev.max_spots * 100)
+    const left = ev.max_spots - count
+    const color = left === 0 ? 'var(--danger)' : left <= 3 ? 'var(--warning)' : 'var(--success)'
+
+    const card = document.createElement('div')
+    card.className = 'event-card'
+    card.onclick = () => nav('event', ev.id)
+    card.innerHTML = `
+      <div class="event-img" style="background:${CAT_COLOR[ev.category]||CAT_COLOR.sport}">${CAT_EMOJI[ev.category]||'📅'}</div>
+      <div class="event-body">
+        <div class="event-title">${ev.title}</div>
+        <div class="event-meta">
+          <span>📅 ${ev.is_recurring ? (ev.days_label || 'Récurrent') : fmt(ev.date)}</span>
+          ${ev.time_start ? `<span>⏰ ${ev.time_start.slice(0,5)}${ev.time_end ? ' – '+ev.time_end.slice(0,5) : ''}</span>` : ''}
+          <span>📍 ${ev.location}</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:.75rem;color:var(--gray-600)">${count} / ${ev.max_spots} inscrits</span>
+          ${left === 0 ? '<span class="badge badge-danger">🔴 Complet</span>' : left <= 3 ? `<span class="badge badge-warning">⚡ ${left} place${left>1?'s':''}</span>` : '<span class="badge badge-success">✅ Places dispo</span>'}
+        </div>
+      </div>`
+    grid.appendChild(card)
+  })
+}
+
+// ── CREATE EVENT ──────────────────────────────────────────────
+function setType(t) {
+  document.getElementById('tog-u').classList.toggle('active', t==='u')
+  document.getElementById('tog-r').classList.toggle('active', t==='r')
+  document.getElementById('sec-unique').style.display = t==='u' ? 'block' : 'none'
+  document.getElementById('sec-recur').style.display  = t==='r' ? 'block' : 'none'
+}
+
+async function createEvent() {
+  if (!initDB()) return
+  const title = document.getElementById('c-title').value.trim()
+  const loc   = document.getElementById('c-loc').value.trim()
+  if (!title || !loc) { toast('Titre et lieu requis', 'error'); return }
+
+  const isRecur = document.getElementById('tog-r').classList.contains('active')
+  const max = parseInt(document.getElementById('c-max').value) || 20
+  const cat = document.getElementById('c-cat').value
+  const desc = document.getElementById('c-desc').value.trim()
+
+  let payload = { title, description: desc, category: cat, location: loc, max_spots: max, slug: slugify(title), is_recurring: isRecur }
+
+  if (!isRecur) {
+    const date = document.getElementById('c-date').value
+    const time = document.getElementById('c-time').value
+    if (!date) { toast('Date requise', 'error'); return }
+    payload = { ...payload, date, time_start: time }
+  } else {
+    const dstart = document.getElementById('c-dstart').value
+    const dend   = document.getElementById('c-dend').value
+    const tstart = document.getElementById('c-tstart').value
+    const tend   = document.getElementById('c-tend').value
+    const selected = [...document.querySelectorAll('.day-btn.selected')]
+    if (!dstart || !dend || !selected.length) { toast('Remplis les dates et jours', 'error'); return }
+    const dayNames = { '0':'Dim','1':'Lun','2':'Mar','3':'Mer','4':'Jeu','5':'Ven','6':'Sam' }
+    const days_label = selected.map(d => dayNames[d.dataset.day]).join(' & ')
+    payload = { ...payload, date: dstart, recurring_end: dend, time_start: tstart, time_end: tend, days_label: `${days_label} · ${fmt(dstart).split(' ').slice(-3).join(' ')} → ${fmt(dend).split(' ').slice(-3).join(' ')}` }
+  }
+
+  const btn = document.querySelector(‘button[onclick="createEvent()"]’); btn.disabled = true; btn.textContent = ‘⏳ Création…’
+  const { data, error } = await db.from(‘events’).insert(payload).select().single()
+  btn.disabled = false; btn.textContent = "🚀 Créer l’événement"
+
+  if (error) { toast('Erreur : ' + error.message, 'error'); return }
+  toast('Événement créé ! 🎉', 'success')
+  nav('event', data.id)
+}
+
+// ── EVENT DETAIL ──────────────────────────────────────────────
+async function loadEvent(id) {
+  if (!initDB()) return
+  const headerWrap = document.getElementById('ev-header')
+  const formWrap   = document.getElementById('ev-form-wrap')
+  const shareWrap  = document.getElementById('ev-share')
+  headerWrap.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>'
+  formWrap.innerHTML = ''; shareWrap.innerHTML = ''
+
+  const { data: ev } = await db.from('events').select('*').eq('id', id).single()
+  const { count: confirmed } = await db.from('registrations').select('*', { count:'exact', head:true }).eq('event_id', id).eq('status','confirmed')
+  const { count: waiting }   = await db.from('registrations').select('*', { count:'exact', head:true }).eq('event_id', id).eq('status','waitlist')
+
+  document.getElementById('ev-breadcrumb').textContent = ev.title
+  const left = ev.max_spots - confirmed
+
+  headerWrap.innerHTML = `
+    <div style="background:${CAT_COLOR[ev.category]||CAT_COLOR.sport};border-radius:var(--radius);padding:28px;color:#fff;text-align:center;margin-bottom:18px">
+      <div style="font-size:3rem;margin-bottom:8px">${CAT_EMOJI[ev.category]||'📅'}</div>
+      <h1 style="font-size:1.4rem;font-weight:900">${ev.title}</h1>
+      ${ev.description ? `<p style="opacity:.85;margin-top:6px;font-size:.9rem">${ev.description}</p>` : ''}
+      <p style="opacity:.75;margin-top:8px;font-size:.85rem">📍 ${ev.location}</p>
+      ${ev.is_recurring
+        ? `<p style="opacity:.75;font-size:.82rem;margin-top:4px">🔁 ${ev.days_label}</p>`
+        : `<p style="opacity:.75;font-size:.82rem;margin-top:4px">📅 ${fmt(ev.date)}${ev.time_start?' · '+ev.time_start.slice(0,5):''}</p>`}
+    </div>
+    <div class="stat-row" style="margin-bottom:18px">
+      <div class="stat-box"><div class="stat-num">${ev.max_spots}</div><div class="stat-label">Places</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--success)">${confirmed}</div><div class="stat-label">Confirmés</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:${left<=0?'var(--danger)':left<=3?'var(--warning)':'var(--primary)'}">${left<=0?'Complet':left}</div><div class="stat-label">${left<=0?'':' restantes'}</div></div>
+      ${waiting>0?`<div class="stat-box"><div class="stat-num" style="color:var(--warning)">${waiting}</div><div class="stat-label">Attente</div></div>`:''}
+    </div>`
+
+  // Formulaire inscription
+  formWrap.innerHTML = `
+    <div class="card" id="reg-card">
+      <div class="card-title">🙋 ${left<=0 ? 'Rejoindre la liste d\'attente' : 'Je participe !'}</div>
+      ${left<=0 ? `<p style="color:var(--warning);font-size:.85rem;margin-bottom:14px">L'événement est complet — tu seras ajouté(e) en liste d'attente (position ${waiting+1}).</p>` : ''}
+      <div class="form-row">
+        <div class="form-group"><label>Prénom *</label><input id="reg-fname" type="text" placeholder="Prénom"></div>
+        <div class="form-group"><label>Nom *</label><input id="reg-lname" type="text" placeholder="Nom"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Email (pour notifications)</label><input id="reg-email" type="email" placeholder="email@exemple.fr"></div>
+        <div class="form-group"><label>Téléphone (optionnel)</label><input id="reg-phone" type="tel" placeholder="+33 6…"></div>
+      </div>
+      <button class="btn ${left<=0?'btn-primary':'btn-success'} btn-lg" style="width:100%;margin-top:4px" onclick="registerParticipant('${id}',${ev.max_spots})">
+        ${left<=0 ? '⏳ Rejoindre la liste d\'attente' : '✅ Je participe !'}
+      </button>
+    </div>`
+
+  // Share box
+  const url = shareUrl(ev.slug)
+  const waLink = `https://wa.me/?text=${encodeURIComponent(`📅 ${ev.title}\nInscris-toi ici : ${url}`)}`
+  shareWrap.innerHTML = `
+    <div class="card">
+      <div class="card-title">🔗 Partager</div>
+      <div class="share-box" style="margin-bottom:12px">
+        <div class="qr-box">QR<br>Code</div>
+        <div style="flex:1">
+          <div class="share-url">${url}</div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${url}');toast('Lien copié !','success')">📋 Copier</button>
+          </div>
+        </div>
+      </div>
+      <a href="${waLink}" target="_blank" style="text-decoration:none">
+        <button class="btn btn-wa" style="width:100%">💬 Partager sur WhatsApp</button>
+      </a>
+    </div>`
+}
+
+// ── REGISTER ──────────────────────────────────────────────────
+async function registerParticipant(eventId, maxSpots) {
+  if (!initDB()) return
+  const fname = document.getElementById('reg-fname').value.trim()
+  const lname = document.getElementById('reg-lname').value.trim()
+  if (!fname || !lname) { toast('Prénom et nom requis', 'error'); return }
+
+  const { count: confirmed } = await db.from('registrations').select('*',{count:'exact',head:true}).eq('event_id',eventId).eq('status','confirmed')
+  const { count: waiting }   = await db.from('registrations').select('*',{count:'exact',head:true}).eq('event_id',eventId).eq('status','waitlist')
+  const isConfirmed = confirmed < maxSpots
+
+  const payload = {
+    event_id: eventId,
+    first_name: fname, last_name: lname,
+    email: document.getElementById('reg-email').value.trim() || null,
+    phone: document.getElementById('reg-phone').value.trim() || null,
+    status: isConfirmed ? 'confirmed' : 'waitlist',
+    waitlist_pos: isConfirmed ? null : (waiting + 1)
+  }
+
+  const { error } = await db.from('registrations').insert(payload)
+  if (error) { toast('Erreur : ' + error.message, 'error'); return }
+
+  document.getElementById('reg-card').innerHTML = `
+    <div class="confirm-center">
+      <div class="big-icon">${isConfirmed ? '✅' : '🟡'}</div>
+      <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:8px">${isConfirmed ? 'Inscription confirmée !' : 'Liste d\'attente'}</h2>
+      <p style="color:var(--gray-600)">${isConfirmed
+        ? 'Tu es bien inscrit(e). Tu recevras un rappel si tu as indiqué ton email.'
+        : `Tu es en position <strong>${waiting+1}</strong> sur la liste d'attente. Tu seras prévenu(e) si une place se libère.`}
+      </p>
+    </div>`
+
+  toast(isConfirmed ? 'Inscription confirmée ! 🎉' : `Liste d'attente – position ${waiting+1}`, isConfirmed ? 'success' : '')
+  // Rafraîchit les stats
+  loadEvent(eventId)
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+async function loadDashboard() {
+  if (!initDB()) return
+  const wrap = document.getElementById('dashboard-content')
+  wrap.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>'
+
+  const { data: events } = await db.from('events').select('*, registrations(count, status)').order('created_at',{ascending:false})
+
+  if (!events?.length) {
+    wrap.innerHTML = `<div class="empty-state"><div class="icon">📭</div><h3>Aucun événement</h3><p>Crée ton premier événement !</p><button class="btn btn-primary" onclick="nav('create')">+ Créer</button></div>`
+    return
+  }
+
+  let html = `<div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="btn btn-primary" onclick="nav('create')">+ Créer un événement</button></div>`
+  html += `<div class="card" style="padding:0;overflow:hidden">`
+
+  events.forEach((ev, i) => {
+    const confirmed = ev.registrations?.filter(r => r.status === 'confirmed').length ?? 0
+    const waiting   = ev.registrations?.filter(r => r.status === 'waitlist').length ?? 0
+    const pct = Math.round(confirmed / ev.max_spots * 100)
+    html += `
+      <div style="display:flex;align-items:center;gap:14px;padding:16px;border-bottom:${i<events.length-1?'1px solid var(--gray-200)':'none'};cursor:pointer" onclick="nav('registrations','${ev.id}')">
+        <div style="font-size:1.6rem;width:44px;height:44px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${CAT_EMOJI[ev.category]||'📅'}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:.95rem">${ev.title}</div>
+          <div style="font-size:.78rem;color:var(--gray-400);margin-top:2px">${ev.is_recurring ? '🔁 '+ev.days_label : fmt(ev.date)} · ${ev.location}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-weight:700">${confirmed}/${ev.max_spots}</div>
+          ${waiting > 0 ? `<div style="font-size:.72rem;color:var(--warning)">⏳ ${waiting} en attente</div>` : `<div style="font-size:.72rem;color:var(--gray-400)">${pct}% rempli</div>`}
+        </div>
+      </div>`
+  })
+
+  html += `</div>`
+  wrap.innerHTML = html
+}
+
+// ── REGISTRATIONS VIEW ────────────────────────────────────────
+async function loadRegistrations(id) {
+  if (!initDB()) return
+  const wrap = document.getElementById('reg-content')
+  wrap.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>'
+
+  const { data: ev } = await db.from('events').select('*').eq('id', id).single()
+  const { data: regs } = await db.from('registrations').select('*').eq('event_id', id).neq('status','cancelled').order('registered_at')
+
+  document.getElementById('reg-breadcrumb').textContent = ev.title
+  const confirmed = regs.filter(r => r.status === 'confirmed')
+  const waiting   = regs.filter(r => r.status === 'waitlist')
+  const url = shareUrl(ev.slug)
+  const waLink = `https://wa.me/?text=${encodeURIComponent(`📅 ${ev.title}\nInscris-toi ici : ${url}`)}`
+
+  let html = `
+    <div class="card" style="display:flex;align-items:center;gap:12px;padding:18px;flex-wrap:wrap">
+      <div style="font-size:2rem;width:50px;height:50px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${CAT_EMOJI[ev.category]||'📅'}</div>
+      <div style="flex:1">
+        <div style="font-size:1.1rem;font-weight:800">${ev.title}</div>
+        <div style="font-size:.82rem;color:var(--gray-400)">${ev.is_recurring ? '🔁 '+ev.days_label : fmt(ev.date)} · ${ev.location}</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="nav('event','${id}')">👁️ Voir</button>
+        <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${url}');toast('Lien copié !','success')">📋 Copier lien</button>
+        <a href="${waLink}" target="_blank" style="text-decoration:none"><button class="btn btn-wa btn-sm">💬 WhatsApp</button></a>
+      </div>
+    </div>
+
+    <div class="stat-row" style="margin-bottom:18px">
+      <div class="stat-box"><div class="stat-num">${ev.max_spots}</div><div class="stat-label">Places</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--success)">${confirmed.length}</div><div class="stat-label">Confirmés</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--warning)">${waiting.length}</div><div class="stat-label">Attente</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--primary)">${Math.round(confirmed.length/ev.max_spots*100)}%</div><div class="stat-label">Rempli</div></div>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:16px 18px 0">
+        <div style="font-weight:700;margin-bottom:12px">✅ Inscrits confirmés (${confirmed.length})</div>
+      </div>
+      <table>
+        <thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Inscrit le</th><th></th></tr></thead>
+        <tbody>`
+
+  if (confirmed.length === 0) {
+    html += `<tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:20px">Aucun inscrit pour l'instant</td></tr>`
+  } else {
+    confirmed.forEach(r => {
+      html += `<tr>
+        <td>${r.first_name} ${r.last_name}</td>
+        <td>${r.email || '—'}</td>
+        <td>${r.phone || '—'}</td>
+        <td>${new Date(r.registered_at).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="removeReg('${r.id}','${id}')">Retirer</button></td>
+      </tr>`
+    })
+  }
+
+  html += `</tbody></table></div>`
+
+  if (waiting.length > 0) {
+    html += `
+      <div class="card" style="padding:0;overflow:hidden;margin-top:18px">
+        <div style="padding:16px 18px 0"><div style="font-weight:700;margin-bottom:12px">⏳ Liste d'attente (${waiting.length})</div></div>
+        <table>
+          <thead><tr><th>Pos.</th><th>Nom</th><th>Email</th><th>Inscrit le</th></tr></thead>
+          <tbody>`
+    waiting.forEach(r => {
+      html += `<tr>
+        <td><span style="background:var(--primary-light);color:var(--primary);font-weight:700;padding:3px 8px;border-radius:12px">${r.waitlist_pos}</span></td>
+        <td>${r.first_name} ${r.last_name}</td>
+        <td>${r.email || '—'}</td>
+        <td>${new Date(r.registered_at).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+      </tr>`
+    })
+    html += `</tbody></table></div>`
+  }
+
+  wrap.innerHTML = html
+}
+
+// ── REMOVE REGISTRATION ───────────────────────────────────────
+async function removeReg(regId, eventId) {
+  if (!confirm('Retirer cette personne ?')) return
+  const { data: reg } = await db.from('registrations').select('event_id').eq('id',regId).single()
+
+  await db.from('registrations').update({ status: 'cancelled' }).eq('id', regId)
+
+  // Promouvoir le 1er en attente
+  const { data: next } = await db.from('registrations').select('*').eq('event_id', eventId).eq('status','waitlist').eq('waitlist_pos',1).single()
+  if (next) {
+    await db.from('registrations').update({ status:'confirmed', waitlist_pos:null }).eq('id', next.id)
+    // Renuméroter
+    await db.rpc('decrement_waitlist', { p_event_id: eventId })
+    toast(`${next.first_name} ${next.last_name} promu(e) depuis la liste d'attente !`, 'success')
+  } else {
+    toast('Participant(e) retiré(e)', 'success')
+  }
+  loadRegistrations(eventId)
+}
+
+// ── DEEP LINK (partage via ?event=slug) ──────────────────────
+async function handleDeepLink() {
+  const params = new URLSearchParams(window.location.search)
+  const slug = params.get('event')
+  if (!slug || !initDB()) return
+  const { data: ev } = await db.from('events').select('id').eq('slug', slug).single()
+  if (ev) nav('event', ev.id)
+}
+
+// ── BOOT ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  handleDeepLink()
+  loadHome()
+})
+</script>
+
+<!-- ══════ INSTRUCTIONS (affichées uniquement si pas configuré) ══════ -->
+</body>
+</html>
