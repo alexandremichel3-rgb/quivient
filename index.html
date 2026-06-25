@@ -491,9 +491,8 @@ async function loadEvent(id) {
   if (!initDB()) return
   const headerWrap = document.getElementById('ev-header')
   const formWrap   = document.getElementById('ev-form-wrap')
-  const shareWrap  = document.getElementById('ev-share')
   headerWrap.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>'
-  formWrap.innerHTML = ''; shareWrap.innerHTML = ''
+  formWrap.innerHTML = ''
 
   const { data: ev } = await db.from('events').select('*').eq('id', id).single()
   const { count: confirmed } = await db.from('registrations').select('*', { count:'exact', head:true }).eq('event_id', id).eq('status','confirmed')
@@ -535,22 +534,6 @@ async function loadEvent(id) {
       <button class="btn ${left<=0?'btn-primary':'btn-success'} btn-lg" style="width:100%;margin-top:4px" onclick="registerParticipant('${id}',${ev.max_spots})">
         ${left<=0 ? '⏳ Rejoindre la liste d\'attente' : '✅ Je participe !'}
       </button>
-    </div>`
-
-  // Share box
-  const url = shareUrl(ev.slug)
-  shareWrap.innerHTML = `
-    <div class="card">
-      <div class="card-title">🔗 Partager</div>
-      <div class="share-box" style="margin-bottom:12px">
-        <div class="qr-box">QR<br>Code</div>
-        <div style="flex:1">
-          <div class="share-url">${url}</div>
-          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-            <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${url}');toast('Lien copié !','success')">📋 Copier</button>
-          </div>
-        </div>
-      </div>
     </div>`
 
   // Participants publics
