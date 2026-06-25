@@ -763,7 +763,7 @@ async function cancelMyReg(regId, slotId, eventId) {
     for (const r of rem || []) {
       await db.from('registrations').update({ waitlist_pos: r.waitlist_pos - 1 }).eq('id', r.id)
     }
-    toast(next.first_name + ' ' + next.last_name + ' promu(e) depuis la liste d''attente !', 'success')
+    toast(next.first_name + ' ' + next.last_name + " promu(e) depuis la liste d'attente !", 'success')
   }
   toast('Désistement enregistré ✅', 'success')
   loadEvent(eventId)
