@@ -129,7 +129,8 @@
   .slot-card{min-width:110px;flex-shrink:0;border:2px solid var(--gray-200);border-radius:14px;padding:16px 10px;text-align:center;cursor:pointer;transition:all .2s;background:#fff}
   .slot-card:hover:not(.full){border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 12px rgba(124,58,237,.15)}
   .slot-card.selected{border-color:var(--primary);background:var(--primary-light)}
-  .slot-card.full{opacity:.65;cursor:not-allowed;background:#fafafa;border-style:dashed}
+  .slot-card.full{opacity:.75;cursor:pointer;background:#fafafa;border-style:dashed}
+.slot-card.full:hover{border-color:var(--warning);transform:translateY(-2px);box-shadow:0 4px 12px rgba(245,158,11,.15)}
   .slot-month{font-size:.68rem;color:var(--gray-400);text-transform:uppercase;font-weight:700;letter-spacing:.08em}
   .slot-day{font-size:2rem;font-weight:900;color:var(--gray-800);line-height:1;margin:2px 0}
   .slot-weekday{font-size:.7rem;color:var(--gray-500);margin-bottom:8px}
@@ -147,7 +148,8 @@
   .slot-card{min-width:110px;flex-shrink:0;border:2px solid var(--gray-200);border-radius:14px;padding:16px 10px;text-align:center;cursor:pointer;transition:all .2s;background:#fff}
   .slot-card:hover:not(.full){border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 12px rgba(124,58,237,.15)}
   .slot-card.selected{border-color:var(--primary);background:var(--primary-light)}
-  .slot-card.full{opacity:.65;cursor:not-allowed;background:#fafafa;border-style:dashed}
+  .slot-card.full{opacity:.75;cursor:pointer;background:#fafafa;border-style:dashed}
+.slot-card.full:hover{border-color:var(--warning);transform:translateY(-2px);box-shadow:0 4px 12px rgba(245,158,11,.15)}
   .slot-month{font-size:.68rem;color:var(--gray-400);text-transform:uppercase;font-weight:700;letter-spacing:.08em}
   .slot-day{font-size:2rem;font-weight:900;color:var(--gray-800);line-height:1;margin:2px 0}
   .slot-weekday{font-size:.7rem;color:var(--gray-500);margin-bottom:8px}
@@ -533,7 +535,7 @@ async function loadEvent(id) {
     gridHtml += '<div class="slot-weekday">' + DAYS[dt.getDay()] + '.</div>'
     if (slot.time_start) gridHtml += '<div class="slot-time">' + slot.time_start.slice(0,5) + (slot.time_end ? '<br>→ ' + slot.time_end.slice(0,5) : '') + '</div>'
     gridHtml += '<div class="slot-limit">Limite : ' + slot.max_spots + '</div>'
-    gridHtml += '<div class="slot-count">' + (full ? '✗' : cnt) + '</div></div>'
+    gridHtml += '<div class="slot-count" style="' + (full ? 'color:var(--warning);font-size:1rem' : '') + '">' + (full ? '⏳ Attente' : cnt) + '</div></div>'
   })
   gridHtml += '</div></div>'
 
@@ -573,7 +575,6 @@ async function loadEvent(id) {
   }
 }
 function handleSlotClick(el) {
-  if (el.classList.contains('full')) return
   currentSlotId = el.dataset.slot
   loadEvent(currentEventId)
 }
