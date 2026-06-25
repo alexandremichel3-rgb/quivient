@@ -562,9 +562,9 @@ async function loadEvent(id) {
   }
 
   if (partWrap && currentSlotId) {
-    const { data: pubs } = await db.from('registrations').select('first_name,last_name').eq('slot_id', currentSlotId).eq('status','confirmed').order('registered_at')
+    const { data: pubs } = await db.from('registrations').select('id,slot_id,first_name,last_name').eq('slot_id', currentSlotId).eq('status','confirmed').order('registered_at')
     if (pubs?.length) {
-      const names = pubs.map(r => '<span style="background:var(--primary-light);color:var(--primary);padding:5px 12px;border-radius:20px;font-size:.85rem;font-weight:600">' + r.first_name + ' ' + r.last_name + '</span>').join('')
+      const names = pubs.map(r => '<span style="background:var(--primary-light);color:var(--primary);padding:5px 12px;border-radius:20px;font-size:.85rem;font-weight:600;display:inline-flex;align-items:center;gap:5px">' + r.first_name + ' ' + r.last_name + '<button onclick="cancelMyReg(\'' + r.id + '\',\'' + r.slot_id + '\',\'' + currentEventId + '\')" style="background:none;border:none;cursor:pointer;font-size:.75rem;opacity:.55;padding:0;line-height:1;color:var(--danger)" title="Se désister">✕</button></span>').join(' ')
       partWrap.innerHTML = '<div class="card"><div class="card-title">👥 Participants (' + pubs.length + ')</div><div style="display:flex;flex-wrap:wrap;gap:8px">' + names + '</div></div>'
     }
   }
