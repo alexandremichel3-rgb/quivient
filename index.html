@@ -539,7 +539,6 @@ async function loadEvent(id) {
 
   // Share box
   const url = shareUrl(ev.slug)
-  const waLink = `https://wa.me/?text=${encodeURIComponent(`📅 ${ev.title}\nInscris-toi ici : ${url}`)}`
   shareWrap.innerHTML = `
     <div class="card">
       <div class="card-title">🔗 Partager</div>
@@ -552,9 +551,6 @@ async function loadEvent(id) {
           </div>
         </div>
       </div>
-      <a href="${waLink}" target="_blank" style="text-decoration:none">
-        <button class="btn btn-wa" style="width:100%">💬 Partager sur WhatsApp</button>
-      </a>
     </div>`
 
   // Participants publics
