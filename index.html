@@ -320,9 +320,8 @@ function nav(page, eventId) {
   window.scrollTo(0, 0)
   if (page === 'home') loadHome()
   if (page === 'dashboard') loadDashboard()
-  if (page === 'event' && eventId) { currentEventId = eventId; if (page === 'create') { slotCounter=0; const _sl=document.getElementById('slots-list'); if(_sl){_sl.innerHTML='';addSlot()} }
   if (page === 'create') { slotCounter=0; const _sl=document.getElementById('slots-list'); if(_sl){_sl.innerHTML='';addSlot()} }
-  loadEvent(eventId) }
+  if (page === 'event' && eventId) { currentEventId = eventId; loadEvent(eventId) }
   if (page === 'registrations' && eventId) { currentEventId = eventId; loadRegistrations(eventId) }
 }
 
