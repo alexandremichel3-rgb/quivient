@@ -458,6 +458,7 @@ async function creerEvenement() {
   if (btn) { btn.disabled = false; btn.textContent = '🚀 Créer l\'événement' }
   if (error) { toast('Erreur : ' + error.message, 'error'); return }
   if (newReg?.[0]?.id) sessionStorage.setItem('qv_reg_' + currentSlotId, newReg[0].id)
+  sessionStorage.setItem('qv_slot_' + currentSlotId, JSON.stringify({title: evData?.title||'', date: slot.date, start: slot.time_start, end: slot.time_end}))
   const slotsPayload = slots.map(s => ({ event_id: ev.id, ...s }))
   const { error: slotErr } = await db.from('event_slots').insert(slotsPayload)
   if (slotErr) { toast('Erreur créneaux : ' + slotErr.message, 'error'); return }
@@ -543,19 +544,20 @@ async function loadEvent(id) {
     (selFull ? '<p style="color:var(--warning);font-size:.85rem;margin-bottom:12px">Ce créneau est complet — tu rejoins la liste d\'attente.</p>' : '') +
     '<div class="form-row"><div class="form-group"><label>Prénom *</label><input id="reg-fname" type="text" placeholder="Prénom"></div>' +
     '<div class="form-group"><label>Nom *</label><input id="reg-lname" type="text" placeholder="Nom"></div></div>' +
-    '<div class="form-group"><label>Email (optionnel)</label><input id="reg-email" type="email" placeholder="email@exemple.fr"></div>' +
-    '<button class="' + (selFull ? 'btn btn-primary' : 'btn btn-success') + ' btn-lg" style="width:100%;margin-top:12px" onclick="registerParticipant()">' +
+        '<button class="' + (selFull ? 'btn btn-primary' : 'btn btn-success') + ' btn-lg" style="width:100%;margin-top:12px" onclick="registerParticipant()">' +
     (selFull ? '⏳ Rejoindre l\'attente' : '✅ Je participe !') + '</button></div></div>'
   formWrap.innerHTML = gridHtml + regHtml
   // Carte désistement si déjà inscrit(e)
   const myRegId = sessionStorage.getItem('qv_reg_' + currentSlotId)
+  const mySlotInfo = JSON.parse(sessionStorage.getItem('qv_slot_' + currentSlotId) || 'null')
   if (myRegId && currentSlotId) {
     const regCard = document.getElementById('reg-card')
     if (regCard) {
       regCard.style.display = 'block'
       regCard.innerHTML = '<div class="card"><div class="card-title">✅ Vous êtes inscrit(e)</div>' +
         '<p style="color:var(--gray-500);font-size:.9rem;margin-bottom:16px">Votre place est réservée pour ce créneau.</p>' +
-        '<button class="btn btn-danger" style="width:100%;margin-top:12px" onclick="cancelMyReg(\'' + myRegId + '\',\'' + currentSlotId + '\',\'' + currentEventId + '\')">⭕ Se désister</button></div>'
+        (mySlotInfo ? '<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:.85rem" onclick="addToCalendar(\'' + mySlotInfo.title + '\',\'' + mySlotInfo.date + '\',\'' + mySlotInfo.start + '\',\'' + mySlotInfo.end + '\')">📅 Ajouter à l\'agenda</button>' : '') +
+      '<button class="btn btn-danger" style="width:100%;margin-top:12px" onclick="cancelMyReg(\'' + myRegId + '\',\'' + currentSlotId + '\',\'' + currentEventId + '\')">⭕ Se désister</button></div>'
     }
   }
 
@@ -578,29 +580,47 @@ async function registerParticipant() {
   const fname = document.getElementById('reg-fname').value.trim()
   const lname = document.getElementById('reg-lname').value.trim()
   if (!fname || !lname) { toast('Prénom et nom requis', 'error'); return }
-  const { data: slot } = await db.from('event_slots').select('max_spots,event_id').eq('id', currentSlotId).single()
+  const { data: slot } = await db.from('event_slots').select('max_spots,event_id,date,time_start,time_end').eq('id', currentSlotId).single()
+  const { data: evData } = await db.from('events').select('title').eq('id', slot?.event_id).single()
   if (!slot) { toast('Créneau introuvable', 'error'); return }
   const { count: cnt } = await db.from('registrations').select('*',{count:'exact',head:true}).eq('slot_id', currentSlotId).eq('status','confirmed')
   const isOk = cnt < slot.max_spots
   const { data: newReg, error } = await db.from('registrations').insert({
     event_id: slot.event_id, slot_id: currentSlotId,
     first_name: fname, last_name: lname,
-    email: document.getElementById('reg-email').value.trim() || null,
+    email: null,
     status: isOk ? 'confirmed' : 'waitlist',
     waitlist_pos: isOk ? null : (cnt + 1)
   }).select()
   if (error) { toast('Erreur : ' + error.message, 'error'); return }
   const card = document.getElementById('reg-card')
+  const calBtnHtml = '<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:.85rem" onclick="addToCalendar(\'' + (evData?.title||'').replace(/'/g,"\\'")+  '\',\''+slot.date+'\',\''+slot.time_start+'\',\''+slot.time_end+'\')">📅 Ajouter à l\'agenda</button>'
   if (card) card.innerHTML =
     '<div class="card"><div class="confirm-center">' +
     '<div class="big-icon">' + (isOk ? '✅' : '🟡') + '</div>' +
     '<h2 style="font-size:1.2rem;font-weight:800;margin-bottom:8px">' + (isOk ? 'Inscription confirmée !' : "Liste d'attente") + '</h2>' +
-    '<p style="color:var(--gray-600)">' + (isOk ? 'Tu es bien inscrit(e) !' : "Tu seras prévenu(e) si une place se libère.") + '</p></div></div>'
-  toast(isOk ? 'Inscription confirmée ! 🎉' : "Liste d'attente", isOk ? 'success' : '')
+    '<p style="color:var(--gray-600)">' + (isOk ? 'Tu es bien inscrit(e) !' : "Tu seras prévenu(e) si une place se libère.") + '</p>' + calBtnHtml + '</div></div>'  toast(isOk ? 'Inscription confirmée ! 🎉' : "Liste d'attente", isOk ? 'success' : '')
   loadEvent(slot.event_id)
 }
 
 
+function addToCalendar(title, date, tStart, tEnd) {
+  const d = date.replace(/-/g, '')
+  const ts = tStart.replace(':', '') + '00'
+  const te = tEnd.replace(':', '') + '00'
+  const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//QuiVient//EN',
+    'BEGIN:VEVENT','DTSTART:' + d + 'T' + ts,'DTEND:' + d + 'T' + te,
+    'SUMMARY:' + title,'END:VEVENT','END:VCALENDAR'].join('\r\n')
+  const blob = new Blob([ics], {type: 'text/calendar'})
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = title + '.ics'
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
 async function loadDashboard() {
   if (!initDB()) return
   const wrap = document.getElementById('dashboard-content')
