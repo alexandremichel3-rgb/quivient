@@ -123,6 +123,42 @@
   .big-icon { font-size: 3.5rem; margin-bottom: 14px; }
 
   @media(max-width:600px){ .form-row { grid-template-columns:1fr; } .hero h1{font-size:1.7rem;} }
+
+  /* === SLOT GRID (whocan.org style) === */
+  .slot-grid{display:flex;gap:10px;overflow-x:auto;padding:4px 0 16px;-webkit-overflow-scrolling:touch}
+  .slot-card{min-width:110px;flex-shrink:0;border:2px solid var(--gray-200);border-radius:14px;padding:16px 10px;text-align:center;cursor:pointer;transition:all .2s;background:#fff}
+  .slot-card:hover:not(.full){border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 12px rgba(124,58,237,.15)}
+  .slot-card.selected{border-color:var(--primary);background:var(--primary-light)}
+  .slot-card.full{opacity:.65;cursor:not-allowed;background:#fafafa;border-style:dashed}
+  .slot-month{font-size:.68rem;color:var(--gray-400);text-transform:uppercase;font-weight:700;letter-spacing:.08em}
+  .slot-day{font-size:2rem;font-weight:900;color:var(--gray-800);line-height:1;margin:2px 0}
+  .slot-weekday{font-size:.7rem;color:var(--gray-500);margin-bottom:8px}
+  .slot-time{font-size:.68rem;color:var(--gray-500);line-height:1.5}
+  .slot-limit{font-size:.66rem;color:var(--gray-400);margin-top:4px}
+  .slot-count{font-size:1.6rem;font-weight:900;color:var(--success);margin-top:8px}
+  .slot-card.full .slot-count{color:var(--danger)}
+  .slot-card.selected .slot-day,.slot-card.selected .slot-count{color:var(--primary)}
+  .slot-row{display:flex;align-items:center;gap:8px;padding:10px;background:var(--gray-50);border-radius:10px;margin-bottom:8px;flex-wrap:wrap}
+  .slot-row input{padding:8px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:.85rem;background:#fff}
+
+
+  /* === SLOT GRID (whocan.org style) === */
+  .slot-grid{display:flex;gap:10px;overflow-x:auto;padding:4px 0 16px;-webkit-overflow-scrolling:touch}
+  .slot-card{min-width:110px;flex-shrink:0;border:2px solid var(--gray-200);border-radius:14px;padding:16px 10px;text-align:center;cursor:pointer;transition:all .2s;background:#fff}
+  .slot-card:hover:not(.full){border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 12px rgba(124,58,237,.15)}
+  .slot-card.selected{border-color:var(--primary);background:var(--primary-light)}
+  .slot-card.full{opacity:.65;cursor:not-allowed;background:#fafafa;border-style:dashed}
+  .slot-month{font-size:.68rem;color:var(--gray-400);text-transform:uppercase;font-weight:700;letter-spacing:.08em}
+  .slot-day{font-size:2rem;font-weight:900;color:var(--gray-800);line-height:1;margin:2px 0}
+  .slot-weekday{font-size:.7rem;color:var(--gray-500);margin-bottom:8px}
+  .slot-time{font-size:.68rem;color:var(--gray-500);line-height:1.5}
+  .slot-limit{font-size:.66rem;color:var(--gray-400);margin-top:4px}
+  .slot-count{font-size:1.6rem;font-weight:900;color:var(--success);margin-top:8px}
+  .slot-card.full .slot-count{color:var(--danger)}
+  .slot-card.selected .slot-day,.slot-card.selected .slot-count{color:var(--primary)}
+  .slot-row{display:flex;align-items:center;gap:8px;padding:10px;background:var(--gray-50);border-radius:10px;margin-bottom:8px;flex-wrap:wrap}
+  .slot-row input{padding:8px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:.85rem;background:#fff}
+
 </style>
 </head>
 <body>
@@ -182,43 +218,10 @@
       <div class="form-group"><label>Max. participants par séance *</label><input id="c-max" type="number" value="20" min="1"></div>
     </div>
 
-    <div class="card">
-      <div class="card-title">📅 Type d'événement</div>
-      <div class="toggle-group">
-        <div class="toggle-opt active" id="tog-u" onclick="setType('u')">📌 Ponctuel</div>
-        <div class="toggle-opt" id="tog-r" onclick="setType('r')">🔁 Récurrent</div>
-      </div>
-
-      <!-- PONCTUEL -->
-      <div id="sec-unique">
-        <div class="form-row">
-          <div class="form-group"><label>Date *</label><input id="c-date" type="date"></div>
-          <div class="form-group"><label>Heure *</label><input id="c-time" type="time" value="14:00"></div>
-        </div>
-      </div>
-
-      <!-- RÉCURRENT -->
-      <div id="sec-recur" style="display:none">
-        <div class="form-row">
-          <div class="form-group"><label>Date de début *</label><input id="c-dstart" type="date"></div>
-          <div class="form-group"><label>Date de fin *</label><input id="c-dend" type="date"></div>
-        </div>
-        <div class="form-group">
-          <label>Jours de la semaine *</label>
-          <div class="days-picker">
-            <div class="day-btn" data-day="1" onclick="toggleJour(this)">Lun</div>
-            <div class="day-btn" data-day="2" onclick="toggleJour(this)">Mar</div>
-            <div class="day-btn" data-day="3" onclick="toggleJour(this)">Mer</div>
-            <div class="day-btn" data-day="4" onclick="toggleJour(this)">Jeu</div>
-            <div class="day-btn" data-day="5" onclick="toggleJour(this)">Ven</div>
-            <div class="day-btn" data-day="6" onclick="toggleJour(this)">Sam</div>
-            <div class="day-btn" data-day="0" onclick="toggleJour(this)">Dim</div>
-          </div>
-        </div>
-        <div class="form-row">
-        <div id="schedule-par-jour" style="margin-top:12px"></div>
-        </div>
-      </div>
+        <div class="card">
+      <div class="card-title">📅 Créneaux</div>
+      <div id="slots-list"></div>
+      <button class="btn btn-ghost" onclick="addSlot()" style="width:100%;margin-top:6px;border:2px dashed var(--gray-300);padding:10px;border-radius:10px">➕ Ajouter un créneau</button>
     </div>
 
     <div style="display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:#fff;padding:16px 0;border-top:1px solid #e5e7eb;z-index:10">
@@ -313,7 +316,9 @@ function nav(page, eventId) {
   window.scrollTo(0, 0)
   if (page === 'home') loadHome()
   if (page === 'dashboard') loadDashboard()
-  if (page === 'event' && eventId) { currentEventId = eventId; loadEvent(eventId) }
+  if (page === 'event' && eventId) { currentEventId = eventId; if (page === 'create') { slotCounter=0; const _sl=document.getElementById('slots-list'); if(_sl){_sl.innerHTML='';addSlot()} }
+  if (page === 'create') { slotCounter=0; const _sl=document.getElementById('slots-list'); if(_sl){_sl.innerHTML='';addSlot()} }
+  loadEvent(eventId) }
   if (page === 'registrations' && eventId) { currentEventId = eventId; loadRegistrations(eventId) }
 }
 
@@ -395,40 +400,43 @@ async function loadHome() {
 }
 
 // ── CREATE EVENT ──────────────────────────────────────────────
-function setType(t) {
-  document.getElementById('tog-u').classList.toggle('active', t==='u')
-  document.getElementById('tog-r').classList.toggle('active', t==='r')
-  document.getElementById('sec-unique').style.display = t==='u' ? 'block' : 'none'
-  document.getElementById('sec-recur').style.display  = t==='r' ? 'block' : 'none'
 
-  if (t==='r') updateScheduleParJour()}
-
-function toggleJour(el) {
-  el.classList.toggle('selected')
-  updateScheduleParJour()
+let currentEventId = null
+let currentSlotId = null
+let slotCounter = 0
+function addSlot() {
+  slotCounter++
+  const sl = document.getElementById('slots-list')
+  const d = document.createElement('div')
+  d.className = 'slot-row'
+  d.innerHTML =
+    '<input type="date" class="s-date" placeholder="Date" style="flex:1.5;min-width:130px">' +
+    '<input type="time" class="s-tstart" value="18:00" style="flex:1;min-width:85px">' +
+    '<span style="color:var(--gray-400);font-size:1.1rem">â</span>' +
+    '<input type="time" class="s-tend" value="20:00" style="flex:1;min-width:85px">' +
+    '<input type="number" class="s-max" value="20" min="1" style="width:65px;text-align:center" title="Places max">' +
+    '<button class="btn btn-ghost btn-sm" style="padding:4px 10px;color:var(--danger)">â</button>'
+  d.querySelector('button').onclick = () => d.remove()
+  sl.appendChild(d)
 }
 
-function updateScheduleParJour() {
-  const wrap = document.getElementById('schedule-par-jour')
-  if (!wrap) return
-  const selected = [...document.querySelectorAll('.day-btn.selected')]
-  const dayNames = {'0':'Dim','1':'Lun','2':'Mar','3':'Mer','4':'Jeu','5':'Ven','6':'Sam'}
-  const existing = {}
-  wrap.querySelectorAll('.horaire-row').forEach(r => {
-    existing[r.dataset.day] = { s: r.querySelector('.dts').value, e: r.querySelector('.dte').value }
-  })
-  if (!selected.length) { wrap.innerHTML = ''; return }
-  wrap.innerHTML = '<label style="font-size:.85rem;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Horaires par jour</label>' +
-    selected.map(btn => {
-      const d = btn.dataset.day
-      const t = existing[d] || { s: '18:00', e: '20:00' }
-      return '<div class="horaire-row" data-day="' + d + '" style="display:flex;align-items:center;gap:8px;margin-top:8px">' +
-        '<span style="min-width:36px;font-weight:700;color:var(--primary)">' + dayNames[d] + '</span>' +
-        '<input class="dts" type="time" value="' + t.s + '" style="flex:1;padding:6px 8px;border:1px solid var(--gray-200);border-radius:8px">' +
-        '<span style="color:var(--gray-400)">→</span>' +
-        '<input class="dte" type="time" value="' + t.e + '" style="flex:1;padding:6px 8px;border:1px solid var(--gray-200);border-radius:8px">' +
-        '</div>'
-    }).join('')
+let currentEventId = null
+let currentSlotId = null
+let slotCounter = 0
+function addSlot() {
+  slotCounter++
+  const sl = document.getElementById('slots-list')
+  const d = document.createElement('div')
+  d.className = 'slot-row'
+  d.innerHTML =
+    '<input type="date" class="s-date" placeholder="Date" style="flex:1.5;min-width:130px">' +
+    '<input type="time" class="s-tstart" value="18:00" style="flex:1;min-width:85px">' +
+    '<span style="color:var(--gray-400);font-size:1.1rem">â</span>' +
+    '<input type="time" class="s-tend" value="20:00" style="flex:1;min-width:85px">' +
+    '<input type="number" class="s-max" value="20" min="1" style="width:65px;text-align:center" title="Places max">' +
+    '<button class="btn btn-ghost btn-sm" style="padding:4px 10px;color:var(--danger)">â</button>'
+  d.querySelector('button').onclick = () => d.remove()
+  sl.appendChild(d)
 }
 
 async function creerEvenement() {
@@ -436,43 +444,29 @@ async function creerEvenement() {
   const title = document.getElementById('c-title').value.trim()
   const loc   = document.getElementById('c-loc').value.trim()
   if (!title || !loc) { toast('Titre et lieu requis', 'error'); return }
-
-  const isRecur = document.getElementById('tog-r').classList.contains('active')
-  const max = parseInt(document.getElementById('c-max').value) || 20
-  const cat = document.getElementById('c-cat').value
+  const slotRows = [...document.querySelectorAll('.slot-row')]
+  if (!slotRows.length) { toast('Ajoute au moins un crÃ©neau', 'error'); return }
+  const slots = slotRows.map(row => ({
+    date: row.querySelector('.s-date').value,
+    time_start: row.querySelector('.s-tstart').value,
+    time_end: row.querySelector('.s-tend').value,
+    max_spots: parseInt(row.querySelector('.s-max').value) || 20
+  }))
+  if (slots.some(s => !s.date)) { toast('Remplis toutes les dates', 'error'); return }
+  const cat  = document.getElementById('c-cat').value
   const desc = document.getElementById('c-desc').value.trim()
-
-  let payload = { title, description: desc, category: cat, location: loc, max_spots: max, slug: slugify(title), is_recurring: isRecur }
-
-  if (!isRecur) {
-    const date = document.getElementById('c-date').value
-    const time = document.getElementById('c-time').value
-    if (!date) { toast('Date requise', 'error'); return }
-    payload = { ...payload, date, time_start: time }
-  } else {
-    const dstart = document.getElementById('c-dstart').value
-    const dend   = document.getElementById('c-dend').value
-    const selected = [...document.querySelectorAll('.day-btn.selected')]
-    if (!dstart || !dend || !selected.length) { toast('Remplis les dates et jours', 'error'); return }
-    const dayNames = { '0':'Dim','1':'Lun','2':'Mar','3':'Mer','4':'Jeu','5':'Ven','6':'Sam' }
-    const horaires = {}
-    document.querySelectorAll('.horaire-row').forEach(r => {
-      horaires[r.dataset.day] = { s: r.querySelector('.dts').value, e: r.querySelector('.dte').value }
-    })
-    const days_label = selected.map(b => {
-      const d = b.dataset.day; const h = horaires[d]
-      return dayNames[d] + (h ? ' ' + h.s + '→' + h.e : '')
-    }).join(' · ') + ' · ' + fmt(dstart).split(' ').slice(-3).join(' ') + ' → ' + fmt(dend).split(' ').slice(-3).join(' ')
-    payload = { ...payload, date: dstart, recurring_end: dend, days_schedule: JSON.stringify(horaires), time_start: null, time_end: null, days_label }
-  }
-
-  const btn = document.querySelector('button[onclick="creerEvenement()"]'); btn.disabled = true; btn.textContent = '⏳ Création…'
-  const { data, error } = await db.from('events').insert(payload).select().single()
-  btn.disabled = false; btn.textContent = "🚀 Créer l'événement"
-
+  const maxSpots = Math.max(...slots.map(s => s.max_spots))
+  const payload = { title, description: desc, category: cat, location: loc, max_spots: maxSpots, is_recurring: false, slug: slugify(title) + '-' + Date.now().toString(36) }
+  const btn = document.querySelector('button[onclick="creerEvenement()"]')
+  if (btn) { btn.disabled = true; btn.textContent = 'CrÃ©ation...' }
+  const { data: ev, error } = await db.from('events').insert(payload).select().single()
+  if (btn) { btn.disabled = false; btn.textContent = 'ð CrÃ©er l\'Ã©vÃ©nement' }
   if (error) { toast('Erreur : ' + error.message, 'error'); return }
-  toast('Événement créé ! 🎉', 'success')
-  nav('event', data.id)
+  const slotsPayload = slots.map(s => ({ event_id: ev.id, ...s }))
+  const { error: slotErr } = await db.from('event_slots').insert(slotsPayload)
+  if (slotErr) { toast('Erreur crÃ©neaux : ' + slotErr.message, 'error'); return }
+  toast('ÃvÃ©nement crÃ©Ã© ! ð', 'success')
+  nav('event', ev.id)
 }
 
 async function supprimerEvenement(id) {
@@ -489,101 +483,117 @@ async function supprimerEvenement(id) {
 // ── EVENT DETAIL ──────────────────────────────────────────────
 async function loadEvent(id) {
   if (!initDB()) return
+  if (currentEventId !== id) currentSlotId = null
+  currentEventId = id
   const headerWrap = document.getElementById('ev-header')
   const formWrap   = document.getElementById('ev-form-wrap')
+  const partWrap   = document.getElementById('ev-participants')
   headerWrap.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>'
   formWrap.innerHTML = ''
+  if (partWrap) partWrap.innerHTML = ''
 
-  const { data: ev } = await db.from('events').select('*').eq('id', id).single()
-  const { count: confirmed } = await db.from('registrations').select('*', { count:'exact', head:true }).eq('event_id', id).eq('status','confirmed')
-  const { count: waiting }   = await db.from('registrations').select('*', { count:'exact', head:true }).eq('event_id', id).eq('status','waitlist')
+  const { data: ev, error: evErr } = await db.from('events').select('*').eq('id', id).single()
+  if (evErr || !ev) { headerWrap.innerHTML = '<p style="color:var(--danger)">ÃvÃ©nement introuvable</p>'; return }
 
+  const { data: slots } = await db.from('event_slots').select('*').eq('event_id', id).order('date').order('time_start')
   document.getElementById('ev-breadcrumb').textContent = ev.title
-  const left = ev.max_spots - confirmed
 
-  headerWrap.innerHTML = `
-    <div style="background:${CAT_COLOR[ev.category]||CAT_COLOR.sport};border-radius:var(--radius);padding:28px;color:#fff;text-align:center;margin-bottom:18px">
-      <div style="font-size:3rem;margin-bottom:8px">${CAT_EMOJI[ev.category]||'📅'}</div>
-      <h1 style="font-size:1.4rem;font-weight:900">${ev.title}</h1>
-      ${ev.description ? `<p style="opacity:.85;margin-top:6px;font-size:.9rem">${ev.description}</p>` : ''}
-      <p style="opacity:.75;margin-top:8px;font-size:.85rem">📍 ${ev.location}</p>
-      ${ev.is_recurring
-        ? `<p style="opacity:.75;font-size:.82rem;margin-top:4px">🔁 ${ev.days_label}</p>`
-        : `<p style="opacity:.75;font-size:.82rem;margin-top:4px">📅 ${fmt(ev.date)}${ev.time_start?' · '+ev.time_start.slice(0,5):''}</p>`}
-    </div>
-    <div class="stat-row" style="margin-bottom:18px">
-      <div class="stat-box"><div class="stat-num">${ev.max_spots}</div><div class="stat-label">Places</div></div>
-      <div class="stat-box"><div class="stat-num" style="color:var(--success)">${confirmed}</div><div class="stat-label">Confirmés</div></div>
-      <div class="stat-box"><div class="stat-num" style="color:${left<=0?'var(--danger)':left<=3?'var(--warning)':'var(--primary)'}">${left<=0?'Complet':left}</div><div class="stat-label">${left<=0?'':' restantes'}</div></div>
-      ${waiting>0?`<div class="stat-box"><div class="stat-num" style="color:var(--warning)">${waiting}</div><div class="stat-label">Attente</div></div>`:''}
-    </div>`
+  const bgColor = CAT_COLOR[ev.category] || CAT_COLOR.sport
+  const emoji   = CAT_EMOJI[ev.category] || 'ð'
+  headerWrap.innerHTML =
+    '<div style="background:' + bgColor + ';border-radius:var(--radius);padding:24px;color:#fff;text-align:center;margin-bottom:18px">' +
+    '<div style="font-size:2.5rem;margin-bottom:6px">' + emoji + '</div>' +
+    '<h1 style="font-size:1.4rem;font-weight:900">' + ev.title + '</h1>' +
+    (ev.description ? '<p style="opacity:.85;margin-top:6px;font-size:.9rem">' + ev.description + '</p>' : '') +
+    '<p style="opacity:.75;margin-top:8px;font-size:.85rem">ð ' + ev.location + '</p></div>'
 
-  // Formulaire inscription
-  formWrap.innerHTML = `
-    <div class="card" id="reg-card">
-      <div class="card-title">🙋 ${left<=0 ? 'Rejoindre la liste d\'attente' : 'Je participe !'}</div>
-      ${left<=0 ? `<p style="color:var(--warning);font-size:.85rem;margin-bottom:14px">L'événement est complet — tu seras ajouté(e) en liste d'attente (position ${waiting+1}).</p>` : ''}
-      <div class="form-row">
-        <div class="form-group"><label>Prénom *</label><input id="reg-fname" type="text" placeholder="Prénom"></div>
-        <div class="form-group"><label>Nom *</label><input id="reg-lname" type="text" placeholder="Nom"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Email (pour notifications)</label><input id="reg-email" type="email" placeholder="email@exemple.fr"></div>
-        <div class="form-group"><label>Téléphone (optionnel)</label><input id="reg-phone" type="tel" placeholder="+33 6…"></div>
-      </div>
-      <button class="btn ${left<=0?'btn-primary':'btn-success'} btn-lg" style="width:100%;margin-top:4px" onclick="registerParticipant('${id}',${ev.max_spots})">
-        ${left<=0 ? '⏳ Rejoindre la liste d\'attente' : '✅ Je participe !'}
-      </button>
-    </div>`
+  if (!slots?.length) {
+    formWrap.innerHTML = '<div class="card" style="text-align:center;padding:32px"><p style="color:var(--gray-400)">Aucun crÃ©neau disponible</p></div>'
+    return
+  }
 
-  // Participants publics
-  const partWrap = document.getElementById('ev-participants')
-  const { data: pubs } = await db.from('registrations').select('first_name,last_name').eq('event_id',id).eq('status','confirmed').order('registered_at')
-  if (pubs && pubs.length > 0) {
-    const names = pubs.map(r => '<span style="background:var(--primary-light);color:var(--primary);padding:5px 12px;border-radius:20px;font-size:.85rem;font-weight:600">' + r.first_name + ' ' + r.last_name + '</span>').join('')
-    partWrap.innerHTML = '<div class="card"><div class="card-title">👥 Participants (' + pubs.length + ')</div><div style="display:flex;flex-wrap:wrap;gap:8px">' + names + '</div></div>'
-  } else { partWrap.innerHTML = '' }
+  const slotIds = slots.map(s => s.id)
+  const { data: regs } = await db.from('registrations').select('slot_id').in('slot_id', slotIds).eq('status','confirmed')
+  const countMap = {}
+  slotIds.forEach(sid => { countMap[sid] = 0 })
+  regs?.forEach(r => { if (r.slot_id in countMap) countMap[r.slot_id]++ })
+
+  const MONTHS = ['jan','fÃ©v','mars','avr','mai','juin','juil','aoÃ»t','sep','oct','nov','dÃ©c']
+  const DAYS   = ['dim','lun','mar','mer','jeu','ven','sam']
+  let gridHtml = '<div class="card"><div class="card-title">ð Choisissez un crÃ©neau</div><div class="slot-grid">'
+  slots.forEach(slot => {
+    const dt  = new Date(slot.date + 'T00:00:00')
+    const cnt = countMap[slot.id] || 0
+    const full = cnt >= slot.max_spots
+    const sel  = currentSlotId === slot.id
+    const cls  = 'slot-card' + (full ? ' full' : '') + (sel ? ' selected' : '')
+    gridHtml += '<div class="' + cls + '" data-slot="' + slot.id + '" data-max="' + slot.max_spots + '" onclick="handleSlotClick(this)">'
+    gridHtml += '<div class="slot-month">' + MONTHS[dt.getMonth()] + '</div>'
+    gridHtml += '<div class="slot-day">' + dt.getDate() + '</div>'
+    gridHtml += '<div class="slot-weekday">' + DAYS[dt.getDay()] + '.</div>'
+    if (slot.time_start) gridHtml += '<div class="slot-time">' + slot.time_start.slice(0,5) + (slot.time_end ? '<br>â ' + slot.time_end.slice(0,5) : '') + '</div>'
+    gridHtml += '<div class="slot-limit">LimiteÂ : ' + slot.max_spots + '</div>'
+    gridHtml += '<div class="slot-count">' + (full ? 'â' : cnt) + '</div></div>'
+  })
+  gridHtml += '</div></div>'
+
+  const selSlot = currentSlotId ? slots.find(s => s.id === currentSlotId) : null
+  const selCnt  = selSlot ? (countMap[selSlot.id] || 0) : 0
+  const selFull = !!(selSlot && selCnt >= selSlot.max_spots)
+
+  const regHtml =
+    '<div id="reg-card" style="display:' + (currentSlotId ? 'block' : 'none') + '">' +
+    '<div class="card"><div class="card-title">' + (selFull ? 'â³ Liste d\'attente' : 'ð Je participe !') + '</div>' +
+    (selFull ? '<p style="color:var(--warning);font-size:.85rem;margin-bottom:12px">Ce crÃ©neau est complet â tu rejoins la liste d\'attente.</p>' : '') +
+    '<div class="form-row"><div class="form-group"><label>PrÃ©nom *</label><input id="reg-fname" type="text" placeholder="PrÃ©nom"></div>' +
+    '<div class="form-group"><label>Nom *</label><input id="reg-lname" type="text" placeholder="Nom"></div></div>' +
+    '<div class="form-group"><label>Email (optionnel)</label><input id="reg-email" type="email" placeholder="email@exemple.fr"></div>' +
+    '<button class="' + (selFull ? 'btn btn-primary' : 'btn btn-success') + ' btn-lg" style="width:100%;margin-top:12px" onclick="registerParticipant()">' +
+    (selFull ? 'â³ Rejoindre l\'attente' : 'â Je participe !') + '</button></div></div>'
+  formWrap.innerHTML = gridHtml + regHtml
+
+  if (partWrap && currentSlotId) {
+    const { data: pubs } = await db.from('registrations').select('first_name,last_name').eq('slot_id', currentSlotId).eq('status','confirmed').order('registered_at')
+    if (pubs?.length) {
+      const names = pubs.map(r => '<span style="background:var(--primary-light);color:var(--primary);padding:5px 12px;border-radius:20px;font-size:.85rem;font-weight:600">' + r.first_name + ' ' + r.last_name + '</span>').join('')
+      partWrap.innerHTML = '<div class="card"><div class="card-title">ð¥ Participants (' + pubs.length + ')</div><div style="display:flex;flex-wrap:wrap;gap:8px">' + names + '</div></div>'
+    }
+  }
+}
+function handleSlotClick(el) {
+  if (el.classList.contains('full')) return
+  currentSlotId = el.dataset.slot
+  loadEvent(currentEventId)
 }
 
-// ── REGISTER ──────────────────────────────────────────────────
-async function registerParticipant(eventId, maxSpots) {
-  if (!initDB()) return
+async function registerParticipant() {
+  if (!initDB() || !currentSlotId) { toast("Choisis un créneau d'abord", 'error'); return }
   const fname = document.getElementById('reg-fname').value.trim()
   const lname = document.getElementById('reg-lname').value.trim()
   if (!fname || !lname) { toast('Prénom et nom requis', 'error'); return }
-
-  const { count: confirmed } = await db.from('registrations').select('*',{count:'exact',head:true}).eq('event_id',eventId).eq('status','confirmed')
-  const { count: waiting }   = await db.from('registrations').select('*',{count:'exact',head:true}).eq('event_id',eventId).eq('status','waitlist')
-  const isConfirmed = confirmed < maxSpots
-
-  const payload = {
-    event_id: eventId,
+  const { data: slot } = await db.from('event_slots').select('max_spots,event_id').eq('id', currentSlotId).single()
+  if (!slot) { toast('Créneau introuvable', 'error'); return }
+  const { count: cnt } = await db.from('registrations').select('*',{count:'exact',head:true}).eq('slot_id', currentSlotId).eq('status','confirmed')
+  const isOk = cnt < slot.max_spots
+  const { error } = await db.from('registrations').insert({
+    event_id: slot.event_id, slot_id: currentSlotId,
     first_name: fname, last_name: lname,
     email: document.getElementById('reg-email').value.trim() || null,
-    phone: document.getElementById('reg-phone').value.trim() || null,
-    status: isConfirmed ? 'confirmed' : 'waitlist',
-    waitlist_pos: isConfirmed ? null : (waiting + 1)
-  }
-
-  const { error } = await db.from('registrations').insert(payload)
+    status: isOk ? 'confirmed' : 'waitlist',
+    waitlist_pos: isOk ? null : (cnt + 1)
+  })
   if (error) { toast('Erreur : ' + error.message, 'error'); return }
-
-  document.getElementById('reg-card').innerHTML = `
-    <div class="confirm-center">
-      <div class="big-icon">${isConfirmed ? '✅' : '🟡'}</div>
-      <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:8px">${isConfirmed ? 'Inscription confirmée !' : 'Liste d\'attente'}</h2>
-      <p style="color:var(--gray-600)">${isConfirmed
-        ? 'Tu es bien inscrit(e). Tu recevras un rappel si tu as indiqué ton email.'
-        : `Tu es en position <strong>${waiting+1}</strong> sur la liste d'attente. Tu seras prévenu(e) si une place se libère.`}
-      </p>
-    </div>`
-
-  toast(isConfirmed ? 'Inscription confirmée ! 🎉' : `Liste d'attente – position ${waiting+1}`, isConfirmed ? 'success' : '')
-  // Rafraîchit les stats
-  loadEvent(eventId)
+  const card = document.getElementById('reg-card')
+  if (card) card.innerHTML =
+    '<div class="card"><div class="confirm-center">' +
+    '<div class="big-icon">' + (isOk ? '✅' : '🟡') + '</div>' +
+    '<h2 style="font-size:1.2rem;font-weight:800;margin-bottom:8px">' + (isOk ? 'Inscription confirmée !' : "Liste d'attente") + '</h2>' +
+    '<p style="color:var(--gray-600)">' + (isOk ? 'Tu es bien inscrit(e) !' : "Tu seras prévenu(e) si une place se libère.") + '</p></div></div>'
+  toast(isOk ? 'Inscription confirmée ! 🎉' : "Liste d'attente", isOk ? 'success' : '')
+  loadEvent(slot.event_id)
 }
 
-// ── DASHBOARD ─────────────────────────────────────────────────
+
 async function loadDashboard() {
   if (!initDB()) return
   const wrap = document.getElementById('dashboard-content')
