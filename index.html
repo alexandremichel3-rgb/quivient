@@ -457,6 +457,7 @@ async function creerEvenement() {
   const { data: ev, error } = await db.from('events').insert(payload).select().single()
   if (btn) { btn.disabled = false; btn.textContent = '🚀 Créer l\'événement' }
   if (error) { toast('Erreur : ' + error.message, 'error'); return }
+  if (newReg?.[0]?.id) sessionStorage.setItem('qv_reg_' + currentSlotId, newReg[0].id)
   const slotsPayload = slots.map(s => ({ event_id: ev.id, ...s }))
   const { error: slotErr } = await db.from('event_slots').insert(slotsPayload)
   if (slotErr) { toast('Erreur créneaux : ' + slotErr.message, 'error'); return }
@@ -546,6 +547,17 @@ async function loadEvent(id) {
     '<button class="' + (selFull ? 'btn btn-primary' : 'btn btn-success') + ' btn-lg" style="width:100%;margin-top:12px" onclick="registerParticipant()">' +
     (selFull ? '⏳ Rejoindre l\'attente' : '✅ Je participe !') + '</button></div></div>'
   formWrap.innerHTML = gridHtml + regHtml
+  // Carte désistement si déjà inscrit(e)
+  const myRegId = sessionStorage.getItem('qv_reg_' + currentSlotId)
+  if (myRegId && currentSlotId) {
+    const regCard = document.getElementById('reg-card')
+    if (regCard) {
+      regCard.style.display = 'block'
+      regCard.innerHTML = '<div class="card"><div class="card-title">✅ Vous êtes inscrit(e)</div>' +
+        '<p style="color:var(--gray-500);font-size:.9rem;margin-bottom:16px">Votre place est réservée pour ce créneau.</p>' +
+        '<button class="btn btn-danger" style="width:100%;margin-top:12px" onclick="cancelMyReg(\'' + myRegId + '\',\'' + currentSlotId + '\',\'' + currentEventId + '\')">⭕ Se désister</button></div>'
+    }
+  }
 
   if (partWrap && currentSlotId) {
     const { data: pubs } = await db.from('registrations').select('first_name,last_name').eq('slot_id', currentSlotId).eq('status','confirmed').order('registered_at')
@@ -570,13 +582,13 @@ async function registerParticipant() {
   if (!slot) { toast('Créneau introuvable', 'error'); return }
   const { count: cnt } = await db.from('registrations').select('*',{count:'exact',head:true}).eq('slot_id', currentSlotId).eq('status','confirmed')
   const isOk = cnt < slot.max_spots
-  const { error } = await db.from('registrations').insert({
+  const { data: newReg, error } = await db.from('registrations').insert({
     event_id: slot.event_id, slot_id: currentSlotId,
     first_name: fname, last_name: lname,
     email: document.getElementById('reg-email').value.trim() || null,
     status: isOk ? 'confirmed' : 'waitlist',
     waitlist_pos: isOk ? null : (cnt + 1)
-  })
+  }).select()
   if (error) { toast('Erreur : ' + error.message, 'error'); return }
   const card = document.getElementById('reg-card')
   if (card) card.innerHTML =
@@ -715,6 +727,27 @@ async function loadRegistrations(id) {
 }
 
 // ── REMOVE REGISTRATION ───────────────────────────────────────
+async function cancelMyReg(regId, slotId, eventId) {
+  if (!confirm('Confirmer votre désistement ?')) return
+  await db.from('registrations').update({ status: 'cancelled' }).eq('id', regId)
+  sessionStorage.removeItem('qv_reg_' + slotId)
+  // Promouvoir le 1er en liste d'attente
+  const { data: nextArr } = await db.from('registrations').select('*')
+    .eq('status', 'waitlist').eq('slot_id', slotId)
+    .order('waitlist_pos', { ascending: true }).limit(1)
+  const next = nextArr?.[0]
+  if (next) {
+    await db.from('registrations').update({ status: 'confirmed', waitlist_pos: null }).eq('id', next.id)
+    const { data: rem } = await db.from('registrations').select('id,waitlist_pos')
+      .eq('status', 'waitlist').eq('slot_id', slotId).order('waitlist_pos', { ascending: true })
+    for (const r of rem || []) {
+      await db.from('registrations').update({ waitlist_pos: r.waitlist_pos - 1 }).eq('id', r.id)
+    }
+    toast(next.first_name + ' ' + next.last_name + ' promu(e) depuis la liste d''attente !', 'success')
+  }
+  toast('Désistement enregistré ✅', 'success')
+  loadEvent(eventId)
+}
 async function removeReg(regId, eventId) {
   if (!confirm('Retirer cette personne ?')) return
 
