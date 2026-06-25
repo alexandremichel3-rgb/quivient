@@ -307,8 +307,6 @@ function updateNavAdmin() {
 }
 
 // ── ROUTING ───────────────────────────────────────────────────
-let currentEventId = null
-
 function nav(page, eventId) {
   if ((page === 'dashboard' || page === 'create' || page === 'registrations') && !isAdmin()) { loginAdmin(page); return }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
@@ -420,9 +418,6 @@ function addSlot() {
   sl.appendChild(d)
 }
 
-let currentEventId = null
-let currentSlotId = null
-let slotCounter = 0
 function addSlot() {
   slotCounter++
   const sl = document.getElementById('slots-list')
