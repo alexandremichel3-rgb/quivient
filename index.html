@@ -457,9 +457,7 @@ async function creerEvenement() {
   const { data: ev, error } = await db.from('events').insert(payload).select().single()
   if (btn) { btn.disabled = false; btn.textContent = '🚀 Créer l\'événement' }
   if (error) { toast('Erreur : ' + error.message, 'error'); return }
-  if (newReg?.[0]?.id) sessionStorage.setItem('qv_reg_' + currentSlotId, newReg[0].id)
-  sessionStorage.setItem('qv_slot_' + currentSlotId, JSON.stringify({title: evData?.title||'', date: slot.date, start: slot.time_start, end: slot.time_end}))
-  const slotsPayload = slots.map(s => ({ event_id: ev.id, ...s }))
+    const slotsPayload = slots.map(s => ({ event_id: ev.id, ...s }))
   const { error: slotErr } = await db.from('event_slots').insert(slotsPayload)
   if (slotErr) { toast('Erreur créneaux : ' + slotErr.message, 'error'); return }
   toast('Événement créé ! 🎉', 'success')
@@ -599,7 +597,8 @@ async function registerParticipant() {
     '<div class="card"><div class="confirm-center">' +
     '<div class="big-icon">' + (isOk ? '✅' : '🟡') + '</div>' +
     '<h2 style="font-size:1.2rem;font-weight:800;margin-bottom:8px">' + (isOk ? 'Inscription confirmée !' : "Liste d'attente") + '</h2>' +
-    '<p style="color:var(--gray-600)">' + (isOk ? 'Tu es bien inscrit(e) !' : "Tu seras prévenu(e) si une place se libère.") + '</p>' + calBtnHtml + '</div></div>'  toast(isOk ? 'Inscription confirmée ! 🎉' : "Liste d'attente", isOk ? 'success' : '')
+    '<p style="color:var(--gray-600)">' + (isOk ? 'Tu es bien inscrit(e) !' : "Tu seras prévenu(e) si une place se libère.") + '</p>' + calBtnHtml + '</div></div>'
+  toast(isOk ? 'Inscription confirmée ! 🎉' : "Liste d'attente", isOk ? 'success' : '')
   loadEvent(slot.event_id)
 }
 
