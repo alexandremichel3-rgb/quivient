@@ -410,10 +410,10 @@ function addSlot() {
   d.innerHTML =
     '<input type="date" class="s-date" placeholder="Date" style="flex:1.5;min-width:130px">' +
     '<input type="time" class="s-tstart" value="18:00" style="flex:1;min-width:85px">' +
-    '<span style="color:var(--gray-400);font-size:1.1rem">â</span>' +
+    '<span style="color:var(--gray-400);font-size:1.1rem">→</span>' +
     '<input type="time" class="s-tend" value="20:00" style="flex:1;min-width:85px">' +
     '<input type="number" class="s-max" value="20" min="1" style="width:65px;text-align:center" title="Places max">' +
-    '<button class="btn btn-ghost btn-sm" style="padding:4px 10px;color:var(--danger)">â</button>'
+    '<button class="btn btn-ghost btn-sm" style="padding:4px 10px;color:var(--danger)">✕</button>'
   d.querySelector('button').onclick = () => d.remove()
   sl.appendChild(d)
 }
@@ -426,10 +426,10 @@ function addSlot() {
   d.innerHTML =
     '<input type="date" class="s-date" placeholder="Date" style="flex:1.5;min-width:130px">' +
     '<input type="time" class="s-tstart" value="18:00" style="flex:1;min-width:85px">' +
-    '<span style="color:var(--gray-400);font-size:1.1rem">â</span>' +
+    '<span style="color:var(--gray-400);font-size:1.1rem">→</span>' +
     '<input type="time" class="s-tend" value="20:00" style="flex:1;min-width:85px">' +
     '<input type="number" class="s-max" value="20" min="1" style="width:65px;text-align:center" title="Places max">' +
-    '<button class="btn btn-ghost btn-sm" style="padding:4px 10px;color:var(--danger)">â</button>'
+    '<button class="btn btn-ghost btn-sm" style="padding:4px 10px;color:var(--danger)">✕</button>'
   d.querySelector('button').onclick = () => d.remove()
   sl.appendChild(d)
 }
@@ -440,7 +440,7 @@ async function creerEvenement() {
   const loc   = document.getElementById('c-loc').value.trim()
   if (!title || !loc) { toast('Titre et lieu requis', 'error'); return }
   const slotRows = [...document.querySelectorAll('.slot-row')]
-  if (!slotRows.length) { toast('Ajoute au moins un crÃ©neau', 'error'); return }
+  if (!slotRows.length) { toast('Ajoute au moins un créneau', 'error'); return }
   const slots = slotRows.map(row => ({
     date: row.querySelector('.s-date').value,
     time_start: row.querySelector('.s-tstart').value,
@@ -453,14 +453,14 @@ async function creerEvenement() {
   const maxSpots = Math.max(...slots.map(s => s.max_spots))
   const payload = { title, description: desc, category: cat, location: loc, max_spots: maxSpots, is_recurring: false, slug: slugify(title) + '-' + Date.now().toString(36) }
   const btn = document.querySelector('button[onclick="creerEvenement()"]')
-  if (btn) { btn.disabled = true; btn.textContent = 'CrÃ©ation...' }
+  if (btn) { btn.disabled = true; btn.textContent = 'Création...' }
   const { data: ev, error } = await db.from('events').insert(payload).select().single()
-  if (btn) { btn.disabled = false; btn.textContent = 'ð CrÃ©er l\'Ã©vÃ©nement' }
+  if (btn) { btn.disabled = false; btn.textContent = '🚀 Créer l\'événement' }
   if (error) { toast('Erreur : ' + error.message, 'error'); return }
   const slotsPayload = slots.map(s => ({ event_id: ev.id, ...s }))
   const { error: slotErr } = await db.from('event_slots').insert(slotsPayload)
-  if (slotErr) { toast('Erreur crÃ©neaux : ' + slotErr.message, 'error'); return }
-  toast('ÃvÃ©nement crÃ©Ã© ! ð', 'success')
+  if (slotErr) { toast('Erreur créneaux : ' + slotErr.message, 'error'); return }
+  toast('Événement créé ! 🎉', 'success')
   nav('event', ev.id)
 }
 
@@ -488,22 +488,22 @@ async function loadEvent(id) {
   if (partWrap) partWrap.innerHTML = ''
 
   const { data: ev, error: evErr } = await db.from('events').select('*').eq('id', id).single()
-  if (evErr || !ev) { headerWrap.innerHTML = '<p style="color:var(--danger)">ÃvÃ©nement introuvable</p>'; return }
+  if (evErr || !ev) { headerWrap.innerHTML = '<p style="color:var(--danger)">Événement introuvable</p>'; return }
 
   const { data: slots } = await db.from('event_slots').select('*').eq('event_id', id).order('date').order('time_start')
   document.getElementById('ev-breadcrumb').textContent = ev.title
 
   const bgColor = CAT_COLOR[ev.category] || CAT_COLOR.sport
-  const emoji   = CAT_EMOJI[ev.category] || 'ð'
+  const emoji   = CAT_EMOJI[ev.category] || '📅'
   headerWrap.innerHTML =
     '<div style="background:' + bgColor + ';border-radius:var(--radius);padding:24px;color:#fff;text-align:center;margin-bottom:18px">' +
     '<div style="font-size:2.5rem;margin-bottom:6px">' + emoji + '</div>' +
     '<h1 style="font-size:1.4rem;font-weight:900">' + ev.title + '</h1>' +
     (ev.description ? '<p style="opacity:.85;margin-top:6px;font-size:.9rem">' + ev.description + '</p>' : '') +
-    '<p style="opacity:.75;margin-top:8px;font-size:.85rem">ð ' + ev.location + '</p></div>'
+    '<p style="opacity:.75;margin-top:8px;font-size:.85rem">📍 ' + ev.location + '</p></div>'
 
   if (!slots?.length) {
-    formWrap.innerHTML = '<div class="card" style="text-align:center;padding:32px"><p style="color:var(--gray-400)">Aucun crÃ©neau disponible</p></div>'
+    formWrap.innerHTML = '<div class="card" style="text-align:center;padding:32px"><p style="color:var(--gray-400)">Aucun créneau disponible</p></div>'
     return
   }
 
@@ -513,9 +513,9 @@ async function loadEvent(id) {
   slotIds.forEach(sid => { countMap[sid] = 0 })
   regs?.forEach(r => { if (r.slot_id in countMap) countMap[r.slot_id]++ })
 
-  const MONTHS = ['jan','fÃ©v','mars','avr','mai','juin','juil','aoÃ»t','sep','oct','nov','dÃ©c']
+  const MONTHS = ['jan','fév','mars','avr','mai','juin','juil','août','sep','oct','nov','déc']
   const DAYS   = ['dim','lun','mar','mer','jeu','ven','sam']
-  let gridHtml = '<div class="card"><div class="card-title">ð Choisissez un crÃ©neau</div><div class="slot-grid">'
+  let gridHtml = '<div class="card"><div class="card-title">📅 Choisissez un créneau</div><div class="slot-grid">'
   slots.forEach(slot => {
     const dt  = new Date(slot.date + 'T00:00:00')
     const cnt = countMap[slot.id] || 0
@@ -526,9 +526,9 @@ async function loadEvent(id) {
     gridHtml += '<div class="slot-month">' + MONTHS[dt.getMonth()] + '</div>'
     gridHtml += '<div class="slot-day">' + dt.getDate() + '</div>'
     gridHtml += '<div class="slot-weekday">' + DAYS[dt.getDay()] + '.</div>'
-    if (slot.time_start) gridHtml += '<div class="slot-time">' + slot.time_start.slice(0,5) + (slot.time_end ? '<br>â ' + slot.time_end.slice(0,5) : '') + '</div>'
-    gridHtml += '<div class="slot-limit">LimiteÂ : ' + slot.max_spots + '</div>'
-    gridHtml += '<div class="slot-count">' + (full ? 'â' : cnt) + '</div></div>'
+    if (slot.time_start) gridHtml += '<div class="slot-time">' + slot.time_start.slice(0,5) + (slot.time_end ? '<br>→ ' + slot.time_end.slice(0,5) : '') + '</div>'
+    gridHtml += '<div class="slot-limit">Limite : ' + slot.max_spots + '</div>'
+    gridHtml += '<div class="slot-count">' + (full ? '✗' : cnt) + '</div></div>'
   })
   gridHtml += '</div></div>'
 
@@ -538,20 +538,20 @@ async function loadEvent(id) {
 
   const regHtml =
     '<div id="reg-card" style="display:' + (currentSlotId ? 'block' : 'none') + '">' +
-    '<div class="card"><div class="card-title">' + (selFull ? 'â³ Liste d\'attente' : 'ð Je participe !') + '</div>' +
-    (selFull ? '<p style="color:var(--warning);font-size:.85rem;margin-bottom:12px">Ce crÃ©neau est complet â tu rejoins la liste d\'attente.</p>' : '') +
-    '<div class="form-row"><div class="form-group"><label>PrÃ©nom *</label><input id="reg-fname" type="text" placeholder="PrÃ©nom"></div>' +
+    '<div class="card"><div class="card-title">' + (selFull ? '⏳ Liste d\'attente' : '🙋 Je participe !') + '</div>' +
+    (selFull ? '<p style="color:var(--warning);font-size:.85rem;margin-bottom:12px">Ce créneau est complet — tu rejoins la liste d\'attente.</p>' : '') +
+    '<div class="form-row"><div class="form-group"><label>Prénom *</label><input id="reg-fname" type="text" placeholder="Prénom"></div>' +
     '<div class="form-group"><label>Nom *</label><input id="reg-lname" type="text" placeholder="Nom"></div></div>' +
     '<div class="form-group"><label>Email (optionnel)</label><input id="reg-email" type="email" placeholder="email@exemple.fr"></div>' +
     '<button class="' + (selFull ? 'btn btn-primary' : 'btn btn-success') + ' btn-lg" style="width:100%;margin-top:12px" onclick="registerParticipant()">' +
-    (selFull ? 'â³ Rejoindre l\'attente' : 'â Je participe !') + '</button></div></div>'
+    (selFull ? '⏳ Rejoindre l\'attente' : '✅ Je participe !') + '</button></div></div>'
   formWrap.innerHTML = gridHtml + regHtml
 
   if (partWrap && currentSlotId) {
     const { data: pubs } = await db.from('registrations').select('first_name,last_name').eq('slot_id', currentSlotId).eq('status','confirmed').order('registered_at')
     if (pubs?.length) {
       const names = pubs.map(r => '<span style="background:var(--primary-light);color:var(--primary);padding:5px 12px;border-radius:20px;font-size:.85rem;font-weight:600">' + r.first_name + ' ' + r.last_name + '</span>').join('')
-      partWrap.innerHTML = '<div class="card"><div class="card-title">ð¥ Participants (' + pubs.length + ')</div><div style="display:flex;flex-wrap:wrap;gap:8px">' + names + '</div></div>'
+      partWrap.innerHTML = '<div class="card"><div class="card-title">👥 Participants (' + pubs.length + ')</div><div style="display:flex;flex-wrap:wrap;gap:8px">' + names + '</div></div>'
     }
   }
 }
