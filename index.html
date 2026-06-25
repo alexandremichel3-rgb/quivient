@@ -717,23 +717,41 @@ async function loadRegistrations(id) {
 // ── REMOVE REGISTRATION ───────────────────────────────────────
 async function removeReg(regId, eventId) {
   if (!confirm('Retirer cette personne ?')) return
-  const { data: reg } = await db.from('registrations').select('event_id').eq('id',regId).single()
 
+  // Récupérer le slot_id de l'inscription annulée
+  const { data: reg } = await db.from('registrations').select('slot_id').eq('id', regId).single()
+  const slotId = reg?.slot_id
+
+  // Annuler l'inscription
   await db.from('registrations').update({ status: 'cancelled' }).eq('id', regId)
 
-  // Promouvoir le 1er en attente
-  const { data: next } = await db.from('registrations').select('*').eq('event_id', eventId).eq('status','waitlist').eq('waitlist_pos',1).single()
+  // Trouver le 1er en liste d'attente pour CE créneau
+  let q = db.from('registrations').select('*').eq('status', 'waitlist').order('waitlist_pos', { ascending: true }).limit(1)
+  if (slotId) q = q.eq('slot_id', slotId)
+  else q = q.eq('event_id', eventId)
+  const { data: nextArr } = await q
+  const next = nextArr?.[0]
+
   if (next) {
-    await db.from('registrations').update({ status:'confirmed', waitlist_pos:null }).eq('id', next.id)
-    // Renuméroter
-    await db.rpc('decrement_waitlist', { p_event_id: eventId })
+    // Promouvoir en confirmé
+    await db.from('registrations').update({ status: 'confirmed', waitlist_pos: null }).eq('id', next.id)
+
+    // Renuméroter la liste d'attente restante (sans RPC)
+    let qr = db.from('registrations').select('id,waitlist_pos').eq('status', 'waitlist').order('waitlist_pos', { ascending: true })
+    if (slotId) qr = qr.eq('slot_id', slotId)
+    else qr = qr.eq('event_id', eventId)
+    const { data: remaining } = await qr
+    if (remaining?.length) {
+      for (const r of remaining) {
+        await db.from('registrations').update({ waitlist_pos: r.waitlist_pos - 1 }).eq('id', r.id)
+      }
+    }
     toast(`${next.first_name} ${next.last_name} promu(e) depuis la liste d'attente !`, 'success')
   } else {
     toast('Participant(e) retiré(e)', 'success')
   }
   loadRegistrations(eventId)
 }
-
 // ── DEEP LINK (partage via ?event=slug) ──────────────────────
 async function handleDeepLink() {
   const params = new URLSearchParams(window.location.search)
