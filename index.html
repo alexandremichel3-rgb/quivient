@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QuiVient ?</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   /* ── CONFIG : remplace ces 2 valeurs par les tiennes depuis supabase.com ── */
   /* Voir instructions en bas de page */
@@ -273,6 +274,11 @@
 // touch // ── INIT SUPABASE ──────────────────────────────────────────────
 const { createClient } = supabase
 let db
+
+const EMAILJS_SERVICE_ID = "YOUR_SERVICE_ID"
+const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID"
+const EMAILJS_PUBLIC_KEY = "YOUR_PUBLIC_KEY"
+if (typeof emailjs !== "undefined" && EMAILJS_PUBLIC_KEY !== "YOUR_PUBLIC_KEY") { emailjs.init(EMAILJS_PUBLIC_KEY) }
 
 function initDB() {
   if (SUPABASE_URL === 'COLLE_TON_URL_ICI') {
@@ -549,6 +555,7 @@ async function loadEvent(id) {
     (selFull ? '<p style="color:var(--warning);font-size:.85rem;margin-bottom:12px">Ce créneau est complet — tu rejoins la liste d\'attente.</p>' : '') +
     '<div class="form-row"><div class="form-group"><label>Prénom *</label><input id="reg-fname" type="text" placeholder="Prénom"></div>' +
     '<div class="form-group"><label>Nom *</label><input id="reg-lname" type="text" placeholder="Nom"></div></div>' +
+    '<div class="form-row"><div class="form-group"><label>Email (optionnel)</label><input id="reg-email" type="email" placeholder="email@exemple.fr" autocomplete="email"></div></div>' +
         '<button class="' + (selFull ? 'btn btn-primary' : 'btn btn-success') + ' btn-lg" style="width:100%;margin-top:12px" onclick="registerParticipant()">' +
     (selFull ? '⏳ Rejoindre l\'attente' : '✅ Je participe !') + '</button></div></div>'
   formWrap.innerHTML = gridHtml + regHtml
@@ -586,6 +593,7 @@ async function registerParticipant() {
   if (!initDB() || !currentSlotId) { toast("Choisis un créneau d'abord", 'error'); return }
   const fname = document.getElementById('reg-fname').value.trim()
   const lname = document.getElementById('reg-lname').value.trim()
+  const emailVal = document.getElementById('reg-email') ? document.getElementById('reg-email').value.trim() : ''
   if (!fname || !lname) { toast('Prénom et nom requis', 'error'); return }
   const { data: slot } = await db.from('event_slots').select('max_spots,event_id,date,time_start,time_end').eq('id', currentSlotId).single()
   const { data: evData } = await db.from('events').select('title').eq('id', slot?.event_id).single()
@@ -597,6 +605,7 @@ async function registerParticipant() {
     first_name: fname, last_name: lname,
     email: null,
     status: isOk ? 'confirmed' : 'waitlist',
+    email: emailVal || null,
     waitlist_pos: isOk ? null : (cnt + 1)
   }).select()
   if (error) { toast('Erreur : ' + error.message, 'error'); return }
@@ -755,6 +764,18 @@ async function loadRegistrations(id) {
 }
 
 // ── REMOVE REGISTRATION ───────────────────────────────────────
+async function sendPromotionEmail(toEmail, toName, eventTitle, slotDate) {
+  if (!toEmail || EMAILJS_PUBLIC_KEY === "YOUR_PUBLIC_KEY") return
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: toEmail,
+      to_name: toName,
+      event_title: eventTitle,
+      slot_date: slotDate
+    })
+  } catch(e) { console.error("EmailJS error", e) }
+}
+
 async function cancelMyReg(regId, slotId, eventId) {
   if (!confirm('Confirmer votre désistement ?')) return
   await db.from('registrations').update({ status: 'cancelled' }).eq('id', regId)
@@ -770,6 +791,12 @@ async function cancelMyReg(regId, slotId, eventId) {
       .eq('status', 'waitlist').eq('slot_id', slotId).order('waitlist_pos', { ascending: true })
     for (const r of rem || []) {
       await db.from('registrations').update({ waitlist_pos: r.waitlist_pos - 1 }).eq('id', r.id)
+    }
+    if (next.email) {
+      const { data: slotInfo2 } = await db.from('event_slots').select('date,time_start,events(title)').eq('id', slotId).single()
+      const eTitle = slotInfo2?.events?.title || "Evenement"
+      const eDate = (slotInfo2?.date || "") + " " + (slotInfo2?.time_start || "")
+      await sendPromotionEmail(next.email, next.first_name + " " + next.last_name, eTitle, eDate)
     }
     toast(next.first_name + ' ' + next.last_name + " promu(e) depuis la liste d'attente !", 'success')
   }
