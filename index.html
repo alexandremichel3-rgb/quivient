@@ -555,7 +555,7 @@ async function loadEvent(id) {
     (selFull ? '<p style="color:var(--warning);font-size:.85rem;margin-bottom:12px">Ce créneau est complet — tu rejoins la liste d\'attente.</p>' : '') +
     '<div class="form-row"><div class="form-group"><label>Prénom *</label><input id="reg-fname" type="text" placeholder="Prénom"></div>' +
     '<div class="form-group"><label>Nom *</label><input id="reg-lname" type="text" placeholder="Nom"></div></div>' +
-    '<div class="form-row"><div class="form-group"><label>Email (optionnel)</label><input id="reg-email" type="email" placeholder="email@exemple.fr" autocomplete="email"></div></div>' +
+    '<div class="form-row"><div class="form-group"><label>Email</label><input id="reg-email" type="email" placeholder="email@exemple.fr" autocomplete="email"><small style="color:var(--gray-400);font-size:.78rem;margin-top:4px;display:block">En liste d'attente ? Entrez votre email pour etre prevenu(e) si une place se libere.</small></div></div>' +
         '<button class="' + (selFull ? 'btn btn-primary' : 'btn btn-success') + ' btn-lg" style="width:100%;margin-top:12px" onclick="registerParticipant()">' +
     (selFull ? '⏳ Rejoindre l\'attente' : '✅ Je participe !') + '</button></div></div>'
   formWrap.innerHTML = gridHtml + regHtml
