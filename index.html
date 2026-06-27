@@ -778,27 +778,36 @@ async function sendPromotionEmail(toEmail, toName, eventTitle, slotDate) {
 
 async function cancelMyReg(regId, slotId, eventId) {
   if (!confirm('Confirmer votre désistement ?')) return
+  const { data: regData } = await db.from('registrations').select('status').eq('id', regId).single()
+  const wasConfirmed = regData?.status === 'confirmed'
   await db.from('registrations').update({ status: 'cancelled' }).eq('id', regId)
   sessionStorage.removeItem('qv_reg_' + slotId)
-  // Promouvoir le 1er en liste d'attente
-  const { data: nextArr } = await db.from('registrations').select('*')
-    .eq('status', 'waitlist').eq('slot_id', slotId)
-    .order('waitlist_pos', { ascending: true }).limit(1)
-  const next = nextArr?.[0]
-  if (next) {
-    await db.from('registrations').update({ status: 'confirmed', waitlist_pos: null }).eq('id', next.id)
-    const { data: rem } = await db.from('registrations').select('id,waitlist_pos')
+  if (wasConfirmed) {
+    const { data: nextArr } = await db.from('registrations').select('*')
+      .eq('status', 'waitlist').eq('slot_id', slotId)
+      .order('waitlist_pos', { ascending: true }).limit(1)
+    const next = nextArr?.[0]
+    if (next) {
+      await db.from('registrations').update({ status: 'confirmed', waitlist_pos: null }).eq('id', next.id)
+      const { data: rem } = await db.from('registrations').select('id')
+        .eq('status', 'waitlist').eq('slot_id', slotId).order('waitlist_pos', { ascending: true })
+      for (let i = 0; i < (rem || []).length; i++) {
+        await db.from('registrations').update({ waitlist_pos: i + 1 }).eq('id', rem[i].id)
+      }
+      if (next.email) {
+        const { data: slotInfo2 } = await db.from('event_slots').select('date,time_start,events(title)').eq('id', slotId).single()
+        const eTitle = slotInfo2?.events?.title || "Evenement"
+        const eDate = (slotInfo2?.date || "") + " " + (slotInfo2?.time_start || "")
+        await sendPromotionEmail(next.email, next.first_name + " " + next.last_name, eTitle, eDate)
+      }
+      toast(next.first_name + ' ' + next.last_name + " promu(e) depuis la liste d'attente !", 'success')
+    }
+  } else {
+    const { data: rem } = await db.from('registrations').select('id')
       .eq('status', 'waitlist').eq('slot_id', slotId).order('waitlist_pos', { ascending: true })
-    for (const r of rem || []) {
-      await db.from('registrations').update({ waitlist_pos: r.waitlist_pos - 1 }).eq('id', r.id)
+    for (let i = 0; i < (rem || []).length; i++) {
+      await db.from('registrations').update({ waitlist_pos: i + 1 }).eq('id', rem[i].id)
     }
-    if (next.email) {
-      const { data: slotInfo2 } = await db.from('event_slots').select('date,time_start,events(title)').eq('id', slotId).single()
-      const eTitle = slotInfo2?.events?.title || "Evenement"
-      const eDate = (slotInfo2?.date || "") + " " + (slotInfo2?.time_start || "")
-      await sendPromotionEmail(next.email, next.first_name + " " + next.last_name, eTitle, eDate)
-    }
-    toast(next.first_name + ' ' + next.last_name + " promu(e) depuis la liste d'attente !", 'success')
   }
   toast('Désistement enregistré ✅', 'success')
   loadEvent(eventId)
