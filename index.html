@@ -364,7 +364,7 @@ async function loadHome() {
   const wrap = document.getElementById('home-content')
   wrap.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>'
 
-  const { data: events, error } = await db.from('events').select('*, registrations(count)').order('created_at', { ascending: false })
+  const { data: events, error } = await db.from('events').select('*, registrations(id, status)').order('created_at', { ascending: false })
 
   if (error) { wrap.innerHTML = `<div class="loading-center" style="color:var(--danger)">Erreur : ${error.message}</div>`; return }
 
@@ -382,7 +382,7 @@ async function loadHome() {
   const grid = document.getElementById('events-grid')
 
   events.forEach(ev => {
-    const count = ev.registrations?.[0]?.count ?? 0
+    const count = (ev.registrations || []).filter(r => r.status === 'confirmed').length
     const pct = Math.round(count / ev.max_spots * 100)
     const left = ev.max_spots - count
     const color = left === 0 ? 'var(--danger)' : left <= 3 ? 'var(--warning)' : 'var(--success)'
