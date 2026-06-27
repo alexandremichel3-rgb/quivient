@@ -600,13 +600,13 @@ async function registerParticipant() {
   if (!slot) { toast('Créneau introuvable', 'error'); return }
   const { count: cnt } = await db.from('registrations').select('*',{count:'exact',head:true}).eq('slot_id', currentSlotId).eq('status','confirmed')
   const isOk = cnt < slot.max_spots
+  const { count: waitCnt } = await db.from('registrations').select('*',{count:'exact',head:true}).eq('slot_id', currentSlotId).eq('status','waitlist')
   const { data: newReg, error } = await db.from('registrations').insert({
     event_id: slot.event_id, slot_id: currentSlotId,
     first_name: fname, last_name: lname,
-    email: null,
     status: isOk ? 'confirmed' : 'waitlist',
     email: emailVal || null,
-    waitlist_pos: isOk ? null : (cnt + 1)
+    waitlist_pos: isOk ? null : ((waitCnt || 0) + 1)
   }).select()
   if (error) { toast('Erreur : ' + error.message, 'error'); return }
   const card = document.getElementById('reg-card')
