@@ -1,5 +1,22 @@
 # CLAUDE.md
 
+## Mémoire personnelle d'Alexandre (à lire AVANT de répondre)
+
+Ce dépôt est un simple point de départ. La mémoire de l'utilisateur (Alexandre Michel, entrepreneur à Pernes-les-Fontaines) est dans le dépôt GitHub **`alexandremichel3-rgb/jarvis-personnel`** (branche master).
+
+Au début de chaque session :
+1. Ajouter ce dépôt à la session avec `add_repo` si besoin (owner `alexandremichel3-rgb`, repo `jarvis-personnel`), puis le cloner dans `/home/user/jarvis-personnel`.
+2. Lire `CLAUDE.md`, `context/CONTEXT.md`, la fin de `context/HISTORY.md` et le fichier `context/PROJET-*.md` du sujet abordé.
+3. Ne jamais dire « je n'ai pas de trace » avant d'avoir cherché dans ce dépôt.
+
+En cours de session : écrire chaque info utile (rendez-vous, décision, réglage, fichier créé, point en suspens) dans le bon fichier de contexte, puis commit et push sur master. À la fin d'un échange important, ajouter une entrée datée dans `context/HISTORY.md`.
+
+Les conversations du téléphone et du PC sont isolées : cette mémoire est le seul lien entre elles.
+
+Communiquer en français, de façon directe, sans tirets longs.
+
+---
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project overview
